@@ -42,7 +42,7 @@ export default function PrintInvoicePage() {
         if (!res.ok) {
           setError(
             data.message ||
-              "Invoice not found"
+            "Invoice not found"
           );
           return;
         }
@@ -261,9 +261,43 @@ export default function PrintInvoicePage() {
 
           <header className="text-center">
 
-            <h1 className="text-xl font-bold tracking-wide">
-              SAKIN PHARMACY
-            </h1>
+            {/* =========================
+    HEADER
+========================= */}
+
+            <header className="text-center">
+
+
+              <h1 className="text-2xl font-bold tracking-wide leading-tight">
+                সাকিন ফার্মেসী
+              </h1>
+
+
+
+              <p className="mt-1 text-sm font-semibold leading-tight">
+                প্রো: মোঃ জাহাঙ্গীর আলম
+              </p>
+
+
+
+              <p className="mt-1 text-[9px] font-medium leading-tight">
+                সার্জিকেল ও সকল প্রকার ঔষধ বিক্রয় করা হয়।
+              </p>
+
+
+
+              <p className="text-[9px] font-medium leading-tight">
+                জিয়া মেডিকেল কলেজ গেট, বগুড়া।
+              </p>
+
+
+
+              <p className="mt-1 text-sm font-bold leading-tight">
+                মোবাইল: ০১৭২৪-৬২১৮১৬
+              </p>
+
+
+            </header>
 
 
             <p className="mt-0.5 text-xs font-semibold">
@@ -403,7 +437,7 @@ export default function PrintInvoicePage() {
                       <Td>
                         {Number(
                           medicine.percentageDiscount ||
-                            0
+                          0
                         )}
                         %
                       </Td>
@@ -465,18 +499,9 @@ export default function PrintInvoicePage() {
 
           <div className="mt-5">
 
-            <div className="flex items-end justify-between gap-5 text-xs">
-
-              <div className="flex-1 border-t border-slate-700 pt-1 text-center">
-                Customer
-              </div>
-
-
-              <div className="flex-1 border-t border-slate-700 pt-1 text-center">
-                Seller
-              </div>
-
-            </div>
+            <p className="text-center text-xs font-semibold">
+              Salesman: {invoice.seller?.name || "-"} | {invoice.seller?.number || "-"}
+            </p>
 
 
             <div className="my-3 border-t border-dashed border-slate-500" />
@@ -590,11 +615,10 @@ function AmountRow({
   return (
 
     <div
-      className={`flex items-center justify-between py-1 ${
-        bold
-          ? "text-sm font-bold"
-          : "text-xs font-semibold"
-      }`}
+      className={`flex items-center justify-between py-1 ${bold
+        ? "text-sm font-bold"
+        : "text-xs font-semibold"
+        }`}
     >
 
       <span>
