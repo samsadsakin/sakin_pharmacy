@@ -8,6 +8,15 @@ import {
   verifySessionToken,
 } from "@/lib/auth";
 
+import {
+  sendSMS
+} from "@/lib/sendSMS";
+
+
+import {
+  createInvoiceSMS
+} from "@/lib/smsMessage";
+
 
 export const runtime = "nodejs";
 
@@ -197,6 +206,27 @@ export async function POST(request) {
       await Invoice.create(
         invoiceData
       );
+    if (
+      data.options?.sms &&
+      data.customer?.phone
+    ) {
+
+
+      const message =
+        createInvoiceSMS(data);
+
+
+
+      await sendSMS(
+
+        data.customer.phone,
+
+        message
+
+      );
+
+
+    }
 
 
     console.log(
