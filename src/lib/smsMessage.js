@@ -62,7 +62,7 @@ export function createInvoiceSMS(data) {
 
     return (
       `#Inv-${data.invoiceNo}: ` +
-      `${data.payableAmount} টাকার ঔষধ ক্রয় করেছেন।~Sakin Pharmacy`
+      `আপনি ${data.payableAmount} টাকার ঔষধ ক্রয় করেছেন।~Sakin Pharmacy`
     );
 
 

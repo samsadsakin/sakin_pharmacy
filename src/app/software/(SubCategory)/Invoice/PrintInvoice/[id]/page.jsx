@@ -121,6 +121,26 @@ export default function PrintInvoicePage() {
             margin: 0 !important;
             padding: 0 !important;
             background: white !important;
+            height: auto !important;
+            min-height: 0 !important;
+          }
+
+
+          /*
+            IMPORTANT FIX:
+            visibility: hidden keeps the element's layout space intact
+            (it just hides it visually). The <main> element uses
+            min-h-screen (100vh) + py-5 padding, so even though its
+            content is invisible, it still reserves a full viewport's
+            worth of height — that leftover empty space is what was
+            spilling over into a blank 2nd printed page.
+            Forcing main's height/padding to collapse in print fixes it.
+          */
+          main {
+            min-height: 0 !important;
+            height: auto !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
 
 
@@ -135,18 +155,22 @@ export default function PrintInvoicePage() {
           }
 
 
+          /*
+            IMPORTANT FIX:
+            position: fixed caused the memo to be re-rendered
+            on every printed page when content overflowed one page,
+            producing duplicate/repeated memos in print output.
+            Using static positioning + normal document flow fixes it.
+          */
           #print-memo {
-            position: fixed !important;
-
-            top: 0 !important;
-            left: 0 !important;
+            position: static !important;
 
             width: 80mm !important;
             max-width: 80mm !important;
 
             min-height: 0 !important;
 
-            margin: 0 !important;
+            margin: 0 auto !important;
 
             padding: 3mm !important;
 
@@ -257,48 +281,30 @@ export default function PrintInvoicePage() {
 
           {/* =========================
               HEADER
+              (removed the duplicate nested <header> that was here)
           ========================= */}
 
           <header className="text-center">
 
-            {/* =========================
-    HEADER
-========================= */}
+            <h1 className="text-2xl font-bold tracking-wide leading-tight">
+              সাকিন ফার্মেসী
+            </h1>
 
-            <header className="text-center">
+            <p className="mt-1 text-sm font-semibold leading-tight">
+              প্রো: মোঃ জাহাঙ্গীর আলম
+            </p>
 
+            <p className="mt-1 text-[9px] font-medium leading-tight">
+              সার্জিকেল ও সকল প্রকার ঔষধ বিক্রয় করা হয়।
+            </p>
 
-              <h1 className="text-2xl font-bold tracking-wide leading-tight">
-                সাকিন ফার্মেসী
-              </h1>
+            <p className="text-[9px] font-medium leading-tight">
+              জিয়া মেডিকেল কলেজ গেট, বগুড়া।
+            </p>
 
-
-
-              <p className="mt-1 text-sm font-semibold leading-tight">
-                প্রো: মোঃ জাহাঙ্গীর আলম
-              </p>
-
-
-
-              <p className="mt-1 text-[9px] font-medium leading-tight">
-                সার্জিকেল ও সকল প্রকার ঔষধ বিক্রয় করা হয়।
-              </p>
-
-
-
-              <p className="text-[9px] font-medium leading-tight">
-                জিয়া মেডিকেল কলেজ গেট, বগুড়া।
-              </p>
-
-
-
-              <p className="mt-1 text-sm font-bold leading-tight">
-                মোবাইল: ০১৭২৪-৬২১৮১৬
-              </p>
-
-
-            </header>
-
+            <p className="mt-1 text-sm font-bold leading-tight">
+              মোবাইল: ০১৭২৪-৬২১৮১৬
+            </p>
 
             <p className="mt-0.5 text-xs font-semibold">
               SALES INVOICE
