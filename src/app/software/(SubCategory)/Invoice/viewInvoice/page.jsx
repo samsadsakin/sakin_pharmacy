@@ -1,6 +1,5 @@
 "use client";
 
-
 import {
   useEffect,
   useState,
@@ -33,7 +32,7 @@ const INVOICES_PER_PAGE = 50;
 
 
 
-function getTodayDate(){
+function getTodayDate() {
 
 
   const date =
@@ -47,14 +46,14 @@ function getTodayDate(){
     "-"
     +
     String(
-      date.getMonth()+1
-    ).padStart(2,"0")
+      date.getMonth() + 1
+    ).padStart(2, "0")
     +
     "-"
     +
     String(
       date.getDate()
-    ).padStart(2,"0")
+    ).padStart(2, "0")
 
   );
 
@@ -68,512 +67,504 @@ function getTodayDate(){
 
 
 
+export default function ViewInvoicePage() {
 
-export default function ViewInvoicePage(){
 
 
 
 
+  const [invoices, setInvoices]
+    =
+    useState([]);
 
-const [invoices,setInvoices]
-=
-useState([]);
 
 
 
+  const [selected, setSelected]
+    =
+    useState(null);
 
-const [selected,setSelected]
-=
-useState(null);
 
 
 
+  const [loading, setLoading]
+    =
+    useState(true);
 
-const [loading,setLoading]
-=
-useState(true);
 
 
 
+  const [error, setError]
+    =
+    useState("");
 
-const [error,setError]
-=
-useState("");
 
 
 
 
+  const [fromDate, setFromDate]
+    =
+    useState("");
 
-const [fromDate,setFromDate]
-=
-useState("");
 
 
+  const [toDate, setToDate]
+    =
+    useState("");
 
-const [toDate,setToDate]
-=
-useState("");
 
 
+  const [invoiceSearch, setInvoiceSearch]
+    =
+    useState("");
 
-const [invoiceSearch,setInvoiceSearch]
-=
-useState("");
 
 
 
 
 
-const [currentPage,setCurrentPage]
-=
-useState(1);
+  const [currentPage, setCurrentPage]
+    =
+    useState(1);
 
 
 
-const [totalPages,setTotalPages]
-=
-useState(1);
+  const [totalPages, setTotalPages]
+    =
+    useState(1);
 
 
 
-const [totalInvoices,setTotalInvoices]
-=
-useState(0);
+  const [totalInvoices, setTotalInvoices]
+    =
+    useState(0);
 
 
 
 
 
+  // =========================
+  // USER
+  // =========================
 
 
-// =========================
-// GET INVOICES
-// =========================
+  const [user, setUser]
+    =
+    useState(null);
 
 
-const getInvoices =
-async()=>{
 
 
-try{
 
 
-setLoading(true);
+  // =========================
+  // GET USER
+  // =========================
 
 
+  const getUser =
+    async () => {
 
-const params =
-new URLSearchParams();
 
+      try {
 
 
-params.set(
-"page",
-currentPage
-);
+        const res =
+          await fetch(
 
+            "/api/auth/me",
 
+            {
+              cache: "no-store"
+            }
 
-params.set(
-"limit",
-INVOICES_PER_PAGE
-);
+          );
 
 
 
+        const data =
+          await res.json();
 
 
-if(invoiceSearch){
 
+        if (data.success) {
 
-params.set(
-"invoiceNo",
-invoiceSearch
-);
+          setUser(
+            data.user
+          );
 
+        }
 
-}
-else{
 
 
-if(fromDate)
-params.set(
-"from",
-fromDate
-);
+      }
 
+      catch (error) {
 
-if(toDate)
-params.set(
-"to",
-toDate
-);
 
+        console.log(
+          "User Load Error",
+          error
+        );
 
 
-}
+      }
 
 
+    };
 
 
 
-const res =
-await fetch(
 
-`/api/software/invoices/view?${params}`,
 
-{
-cache:"no-store"
-}
 
-);
 
 
 
-const data =
-await res.json();
+  useEffect(() => {
 
 
+    getUser();
 
 
-if(!res.ok){
+  }, []);
 
-throw new Error(
-data.message
-);
 
-}
 
 
 
 
 
-setInvoices(
-data.invoices || []
-);
 
 
 
-setTotalInvoices(
-data.pagination?.total || 0
-);
+  // =========================
+  // GET INVOICES
+  // =========================
 
 
+  const getInvoices =
+    async () => {
 
-setTotalPages(
-data.pagination?.totalPages || 1
-);
 
+      try {
 
 
-}
+        setLoading(true);
 
-catch(err){
 
 
-console.error(err);
 
+        const params =
+          new URLSearchParams();
 
-setError(
-"Failed to load invoices"
-);
 
 
 
-}
 
-finally{
+        params.set(
+          "page",
+          currentPage
+        );
 
 
-setLoading(false);
 
 
-}
 
+        params.set(
+          "limit",
+          INVOICES_PER_PAGE
+        );
 
-};
 
 
 
 
 
+        // SALESMAN FILTER
 
+        if (
+          user?.role === "salesman"
+        ) {
 
+          params.set(
+            "sellerNumber",
+            user.mobile
+          );
 
+        }
 
-useEffect(()=>{
 
 
-getInvoices();
 
 
-},[
 
-currentPage,
 
-fromDate,
+        if (invoiceSearch) {
 
-toDate,
 
-invoiceSearch
+          params.set(
+            "invoiceNo",
+            invoiceSearch
+          );
 
-]);
 
+        }
+        else {
 
 
+          if (fromDate)
 
+            params.set(
+              "from",
+              fromDate
+            );
 
 
 
+          if (toDate)
 
+            params.set(
+              "to",
+              toDate
+            );
 
-// =========================
-// DELETE
-// =========================
 
 
-const handleDelete =
-async(invoice)=>{
+        }
 
 
-const result =
-await Swal.fire({
 
-title:
-"Delete Invoice?",
 
-icon:
-"warning",
 
-showCancelButton:true,
 
-confirmButtonText:
-"Delete"
+        const res =
+          await fetch(
 
-});
+            `/api/software/invoices/view?${params}`,
 
+            {
+              cache: "no-store"
+            }
 
+          );
 
-if(!result.isConfirmed)
-return;
 
 
 
 
 
-await fetch(
+        const data =
+          await res.json();
 
-`/api/software/invoices/${invoice._id}`,
 
-{
 
-method:"DELETE"
 
-}
 
-);
 
+        if (!res.ok) {
 
+          throw new Error(
+            data.message
+          );
 
+        }
 
 
-getInvoices();
 
 
 
-};
 
+        setInvoices(
 
+          data.invoices || []
 
+        );
 
 
 
 
 
 
-// =========================
-// VIEW
-// =========================
+        setTotalInvoices(
 
+          data.pagination?.total || 0
 
-const handleView=(invoice)=>{
+        );
 
 
-setSelected(invoice);
 
 
-};
 
 
+        setTotalPages(
 
+          data.pagination?.totalPages || 1
 
+        );
 
 
 
 
-const today =
-getTodayDate();
+      }
 
 
+      catch (err) {
 
-const isTodayActive =
 
-fromDate===today &&
-toDate===today;
+        console.error(err);
 
 
+        setError(
+          "Failed to load invoices"
+        );
 
 
 
+      }
 
 
-const showingFrom =
+      finally {
 
-totalInvoices
 
-?
+        setLoading(false);
 
-(
-currentPage-1
-)
-*
-INVOICES_PER_PAGE
-+
-1
 
-:
+      }
 
-0;
 
+    };
 
 
 
-const showingTo =
 
-Math.min(
 
-currentPage *
-INVOICES_PER_PAGE,
 
-totalInvoices
 
-);
+  useEffect(() => {
 
 
+    if (user !== null) {
 
 
+      getInvoices();
 
 
+    }
 
 
+  }, [
 
-return (
+    currentPage,
 
-<div className="rounded-xl bg-white p-4 shadow-sm">
+    fromDate,
 
+    toDate,
 
-<h1 className="mb-5 text-center text-xl font-semibold text-sky-700">
+    invoiceSearch,
 
-View Invoice
+    user
 
-</h1>
 
+  ]);
+  // =========================
+  // DELETE
+  // =========================
 
 
+  const handleDelete =
+    async (invoice) => {
 
 
+      const result =
+        await Swal.fire({
 
+          title:
+            "Delete Invoice?",
 
-<InvoiceFilter
+          icon:
+            "warning",
 
-today={today}
+          showCancelButton: true,
 
-isTodayActive={isTodayActive}
+          confirmButtonText:
+            "Delete"
 
+        });
 
-fromDate={fromDate}
 
-toDate={toDate}
 
-invoiceSearch={invoiceSearch}
+      if (!result.isConfirmed)
+        return;
 
 
-setFromDate={setFromDate}
 
-setToDate={setToDate}
 
-setInvoiceSearch={setInvoiceSearch}
 
+      await fetch(
 
+        `/api/software/invoices/${invoice._id}`,
 
-onToday={()=>{
+        {
 
+          method: "DELETE"
 
-setFromDate(today);
+        }
 
-setToDate(today);
+      );
 
-setInvoiceSearch("");
 
-setCurrentPage(1);
 
 
-}}
 
+      getInvoices();
 
 
 
-onClear={()=>{
+    };
 
 
-setFromDate("");
 
-setToDate("");
 
-setInvoiceSearch("");
 
-setCurrentPage(1);
 
 
-}}
 
 
-/>
+  // =========================
+  // VIEW
+  // =========================
 
 
+  const handleView = (invoice) => {
 
 
+    setSelected(invoice);
 
 
+  };
 
 
 
-{
-loading ?
 
-<p className="py-10 text-center">
 
-Loading...
 
-</p>
 
-:
 
-<InvoiceTable
 
+  const today =
+    getTodayDate();
 
-invoices={invoices}
 
 
-onView={handleView}
 
 
-onDelete={handleDelete}
 
+  const isTodayActive =
 
-/>
+    fromDate === today &&
+    toDate === today;
 
-}
 
 
 
@@ -581,30 +572,40 @@ onDelete={handleDelete}
 
 
 
+  const showingFrom =
 
+    totalInvoices
 
-<InvoicePagination
+      ?
 
+      (
+        currentPage - 1
+      )
+      *
+      INVOICES_PER_PAGE
+      +
+      1
 
-currentPage={currentPage}
+      :
 
+      0;
 
-totalPages={totalPages}
 
 
-totalInvoices={totalInvoices}
 
 
-showingFrom={showingFrom}
 
+  const showingTo =
 
-showingTo={showingTo}
+    Math.min(
 
+      currentPage *
+      INVOICES_PER_PAGE,
 
-setCurrentPage={setCurrentPage}
+      totalInvoices
 
+    );
 
-/>
 
 
 
@@ -613,31 +614,209 @@ setCurrentPage={setCurrentPage}
 
 
 
+  return (
 
-{
-selected &&
 
-<InvoiceModal
+    <div className="rounded-xl bg-white p-4 shadow-sm">
 
 
-invoice={selected}
 
+      <h1 className="mb-5 text-center text-xl font-semibold text-sky-700">
 
-onClose={()=>setSelected(null)}
+        View Invoice
 
+      </h1>
 
-/>
 
-}
 
 
 
 
 
-</div>
 
 
-);
+      <InvoiceFilter
+
+
+        today={today}
+
+
+        isTodayActive={isTodayActive}
+
+
+
+        fromDate={fromDate}
+
+
+        toDate={toDate}
+
+
+        invoiceSearch={invoiceSearch}
+
+
+
+
+
+        setFromDate={setFromDate}
+
+
+        setToDate={setToDate}
+
+
+        setInvoiceSearch={setInvoiceSearch}
+
+
+
+
+
+
+        onToday={() => {
+
+
+          setFromDate(today);
+
+          setToDate(today);
+
+          setInvoiceSearch("");
+
+          setCurrentPage(1);
+
+
+        }}
+
+
+
+
+
+
+        onClear={() => {
+
+
+          setFromDate("");
+
+          setToDate("");
+
+          setInvoiceSearch("");
+
+          setCurrentPage(1);
+
+
+        }}
+
+
+      />
+
+
+
+
+
+
+
+
+
+      {
+        loading ?
+
+          <p className="py-10 text-center">
+
+            Loading...
+
+          </p>
+
+
+          :
+
+
+          <InvoiceTable
+
+
+
+            invoices={invoices}
+
+
+
+            onView={handleView}
+
+
+
+            onDelete={handleDelete}
+
+
+
+          />
+
+      }
+
+
+
+
+
+
+
+
+
+      <InvoicePagination
+
+
+
+        currentPage={currentPage}
+
+
+
+        totalPages={totalPages}
+
+
+
+        totalInvoices={totalInvoices}
+
+
+
+        showingFrom={showingFrom}
+
+
+
+        showingTo={showingTo}
+
+
+
+        setCurrentPage={setCurrentPage}
+
+
+      />
+
+
+
+
+
+
+
+
+
+      {
+        selected &&
+
+
+        <InvoiceModal
+
+
+          invoice={selected}
+
+
+
+          onClose={() => setSelected(null)}
+
+
+        />
+
+      }
+
+
+
+
+    </div>
+
+
+  );
 
 
 }

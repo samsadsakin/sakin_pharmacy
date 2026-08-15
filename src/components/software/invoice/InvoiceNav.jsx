@@ -54,56 +54,76 @@ export default function InvoiceNav() {
   // =========================
 
   const handleLatestPrint = async () => {
+
     try {
+
       setPrintLoading(true);
 
-      const res = await fetch(
-        "/api/software/invoices",
-        {
-          cache: "no-store",
-        }
-      );
 
-      const data = await res.json();
+      const res =
+        await fetch(
+          "/api/software/invoices/print",
+          {
+            cache: "no-store"
+          }
+        );
+
+
+      const data =
+        await res.json();
+
 
 
       if (!res.ok) {
+
         alert(
           data.message ||
-            "Failed to load invoice"
+          "Failed to load invoice"
         );
 
         return;
+
       }
 
 
-      const latestInvoice =
-        data.invoices?.[0];
 
+      if (!data.invoice?._id) {
 
-      if (!latestInvoice?._id) {
-        alert("No invoice found");
+        alert(
+          "No invoice found"
+        );
+
         return;
+
       }
+
 
 
       router.push(
-        `/software/Invoice/PrintInvoice/${latestInvoice._id}`
+        `/software/Invoice/PrintInvoice/${data.invoice._id}`
       );
 
-    } catch (error) {
+
+    }
+    catch (error) {
+
       console.error(
-        "Latest Invoice Error:",
         error
       );
 
+
       alert(
-        "Failed to load latest invoice"
+        "Failed to load invoice"
       );
 
-    } finally {
-      setPrintLoading(false);
+
     }
+    finally {
+
+      setPrintLoading(false);
+
+    }
+
   };
 
 
@@ -142,11 +162,10 @@ export default function InvoiceNav() {
               <Link
                 key={name}
                 href={href}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs transition sm:gap-2 sm:px-4 sm:text-sm ${
-                  active
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs transition sm:gap-2 sm:px-4 sm:text-sm ${active
                     ? "bg-blue-50 font-medium text-blue-700"
                     : "text-slate-500 hover:bg-slate-50"
-                }`}
+                  }`}
               >
 
                 <Icon className="text-xs" />
@@ -168,11 +187,10 @@ export default function InvoiceNav() {
           type="button"
           onClick={handleLatestPrint}
           disabled={printLoading}
-          className={`hidden items-center gap-2 rounded-lg px-4 py-2 text-sm transition md:flex ${
-            printActive
+          className={`hidden items-center gap-2 rounded-lg px-4 py-2 text-sm transition md:flex ${printActive
               ? "bg-blue-50 font-medium text-blue-700"
               : "text-slate-500 hover:bg-slate-50"
-          } disabled:cursor-wait disabled:opacity-60`}
+            } disabled:cursor-wait disabled:opacity-60`}
         >
 
           <FaPrint className="text-xs" />

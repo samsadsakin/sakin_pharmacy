@@ -20,8 +20,6 @@ export default function InvoiceTable({
 
   onView,
 
-  onUpdate,
-
   onDelete,
 
 }) {
@@ -198,9 +196,7 @@ export default function InvoiceTable({
 
                         invoice={invoice}
 
-                        onView={onView}
-
-                        onUpdate={onUpdate}
+                        onView={onView}                      
 
                         onDelete={onDelete}
 

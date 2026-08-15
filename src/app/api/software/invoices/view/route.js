@@ -33,6 +33,13 @@ export async function GET(request) {
         ) || ""
       ).trim();
 
+    const sellerNumber =
+      String(
+        searchParams.get(
+          "sellerNumber"
+        ) || ""
+      ).trim();
+
 
     const fromDate =
       String(
@@ -99,6 +106,17 @@ export async function GET(request) {
     // =========================
 
     const query = {};
+    
+    // =========================
+    // SALESMAN FILTER
+    // =========================
+
+    if (sellerNumber) {
+
+      query["seller.number"] =
+        sellerNumber;
+
+    }
 
 
     // =========================
