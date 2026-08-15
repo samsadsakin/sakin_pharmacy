@@ -154,7 +154,7 @@ export default function PrintInvoicePage() {
 
             margin: 0 !important;
 
-            padding: 3mm !important;
+            padding: 0mm !important;
 
             box-sizing: border-box !important;
 
