@@ -778,6 +778,7 @@ export default function CreateInvoice() {
 
 
       resetInvoice();
+      loadInvoiceNumber();
 
 
 
