@@ -112,6 +112,7 @@ export default function PrintInvoicePage() {
         @media print {
 
           @page {
+            size: 80mm auto;
             margin: 0;
           }
 
@@ -122,25 +123,8 @@ export default function PrintInvoicePage() {
             padding: 0 !important;
             background: white !important;
             height: auto !important;
-            min-height: 0 !important;
-          }
-
-
-          /*
-            IMPORTANT FIX:
-            visibility: hidden keeps the element's layout space intact
-            (it just hides it visually). The <main> element uses
-            min-h-screen (100vh) + py-5 padding, so even though its
-            content is invisible, it still reserves a full viewport's
-            worth of height — that leftover empty space is what was
-            spilling over into a blank 2nd printed page.
-            Forcing main's height/padding to collapse in print fixes it.
-          */
-          main {
-            min-height: 0 !important;
-            height: auto !important;
-            padding: 0 !important;
-            margin: 0 !important;
+            max-height: none !important;
+            overflow: visible !important;
           }
 
 
@@ -155,22 +139,20 @@ export default function PrintInvoicePage() {
           }
 
 
-          /*
-            IMPORTANT FIX:
-            position: fixed caused the memo to be re-rendered
-            on every printed page when content overflowed one page,
-            producing duplicate/repeated memos in print output.
-            Using static positioning + normal document flow fixes it.
-          */
           #print-memo {
-            position: static !important;
+            position: absolute !important;
+
+            top: 0 !important;
+            left: 0 !important;
 
             width: 80mm !important;
             max-width: 80mm !important;
 
+            height: auto !important;
             min-height: 0 !important;
+            max-height: none !important;
 
-            margin: 0 auto !important;
+            margin: 0 !important;
 
             padding: 3mm !important;
 
@@ -184,6 +166,8 @@ export default function PrintInvoicePage() {
 
             border: none !important;
             border-radius: 0 !important;
+
+            overflow: visible !important;
           }
 
 
@@ -210,18 +194,13 @@ export default function PrintInvoicePage() {
           }
 
 
-          .receipt-table th,
           .receipt-table td {
             border-color: #000 !important;
           }
 
 
-          .receipt-table thead {
-            background: white !important;
-          }
-
-
-          .receipt-table tr {
+          .receipt-table tr,
+          .receipt-table td {
             break-inside: avoid !important;
             page-break-inside: avoid !important;
           }
@@ -281,7 +260,6 @@ export default function PrintInvoicePage() {
 
           {/* =========================
               HEADER
-              (removed the duplicate nested <header> that was here)
           ========================= */}
 
           <header className="text-center">
@@ -290,21 +268,30 @@ export default function PrintInvoicePage() {
               সাকিন ফার্মেসী
             </h1>
 
+
+
             <p className="mt-1 text-sm font-semibold leading-tight">
               প্রো: মোঃ জাহাঙ্গীর আলম
             </p>
+
+
 
             <p className="mt-1 text-[9px] font-medium leading-tight">
               সার্জিকেল ও সকল প্রকার ঔষধ বিক্রয় করা হয়।
             </p>
 
+
+
             <p className="text-[9px] font-medium leading-tight">
               জিয়া মেডিকেল কলেজ গেট, বগুড়া।
             </p>
 
+
+
             <p className="mt-1 text-sm font-bold leading-tight">
               মোবাইল: ০১৭২৪-৬২১৮১৬
             </p>
+
 
             <p className="mt-0.5 text-xs font-semibold">
               SALES INVOICE
@@ -376,9 +363,19 @@ export default function PrintInvoicePage() {
 
           <div className="mt-3">
 
+            {/*
+              NOTE: <thead> is intentionally NOT used here.
+              Browsers automatically repeat a real <thead> on every
+              printed page when a table spans multiple pages, which
+              caused the "SL / Medicine / Qty..." header to duplicate
+              on each page. Using a plain first <tr> inside <tbody>
+              (styled to look like a header) avoids that native
+              repeat behavior.
+            */}
+
             <table className="receipt-table w-full border-collapse">
 
-              <thead>
+              <tbody>
 
                 <tr>
 
@@ -408,10 +405,6 @@ export default function PrintInvoicePage() {
 
                 </tr>
 
-              </thead>
-
-
-              <tbody>
 
                 {invoice.medicines?.map(
                   (medicine, index) => (
@@ -562,7 +555,9 @@ function InfoRow({
 
 
 /* =========================
-   TABLE HEAD
+   TABLE HEADER CELL
+   (rendered as <td>, not <th>, so browsers
+   never treat it as a repeating table header)
 ========================= */
 
 function Th({
@@ -572,14 +567,14 @@ function Th({
 }) {
   return (
 
-    <th
+    <td
       className={`border border-slate-700 px-1 py-1.5 text-xs font-bold leading-tight ${className}`}
       style={{
         textAlign: align,
       }}
     >
       {children}
-    </th>
+    </td>
 
   );
 }
