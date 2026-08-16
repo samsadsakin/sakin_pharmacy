@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Loading from "@/components/software/Loading/Loading";
+import WelcomeCard from "@/components/software/Welcome/welcome";
 
 export default function SoftwareLayout({ children }) {
   const [loading, setLoading] = useState(true);
@@ -15,16 +15,27 @@ export default function SoftwareLayout({ children }) {
   }, []);
 
   if (loading) {
-    return <Loading />;
+    return (
+      <div className="flex justify-center py-10">
+        <div className="flex items-center gap-3 rounded-xl bg-white px-5 py-3 shadow-sm">
+
+          {/* Spinner */}
+          <span className="loading loading-spinner loading-sm text-[#123B6D]"></span>
+
+          <div>
+            <p className="text-sm font-bold text-[#123B6D]">
+              Sakin Pharmacy
+            </p>
+
+            <p className="text-[11px] text-slate-400">
+              Loading software...
+            </p>
+          </div>
+
+        </div>
+      </div>
+    );
   }
 
-  return (
-    <div>
-      <h1 className="text-2xl font-bold text-[#123B6D]">
-        Welcome to Sakin Pharmacy Software
-      </h1>
-
-      {children}
-    </div>
-  );
+  return <WelcomeCard>{children}</WelcomeCard>;
 }

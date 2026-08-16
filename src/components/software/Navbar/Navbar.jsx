@@ -280,8 +280,12 @@ const Sidebar = ({ children }) => {
           <div className="flex h-20 items-center px-3">
 
             <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
+              <Link href="/software">
+              
+               <FaCapsules className="text-lg" />
+              </Link>
 
-              <FaCapsules className="text-lg" />
+             
 
             </div>
 

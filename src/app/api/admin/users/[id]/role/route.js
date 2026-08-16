@@ -12,7 +12,7 @@ import {
 
 import {
   sendSMS,
-} from "@/lib/sms";
+} from "@/lib/(sms)/sms";
 
 
 export const runtime = "nodejs";

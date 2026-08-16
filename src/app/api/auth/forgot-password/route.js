@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 
 import connectDB from "@/lib/mongodb";
 import User from "@/models/user";
-import { sendSMS } from "@/lib/sms";
+import { sendSMS } from "@/lib/(sms)/sms";
 
 export const runtime = "nodejs";
 

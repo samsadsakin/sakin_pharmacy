@@ -10,12 +10,12 @@ import {
 
 import {
   sendSMS
-} from "@/lib/sendSMS";
+} from "@/lib/(sms)/sendSMS";
 
 
 import {
   createInvoiceSMS
-} from "@/lib/smsMessage";
+} from "@/lib/(sms)/smsMessage";
 
 
 export const runtime = "nodejs";
