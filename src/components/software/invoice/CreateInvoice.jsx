@@ -403,22 +403,22 @@ export default function CreateInvoice() {
 
   const updateItem = (e) => {
 
-
-    setItem({
-
-      ...item,
-
-
-      [e.target.name]:
-
-        e.target.value,
+    const {
+      name,
+      value,
+    } = e.target;
 
 
-    });
+    setItem((prev) => ({
 
+      ...prev,
+
+      [name]:
+        value,
+
+    }));
 
   };
-
 
 
 

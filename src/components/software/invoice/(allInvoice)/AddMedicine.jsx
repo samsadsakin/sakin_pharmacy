@@ -18,64 +18,71 @@ export default function AddMedicine({
 
   addMedicine,
 
-}){
+}) {
 
 
 
+  // =========================
+  // SELECT EXISTING MEDICINE
+  // =========================
+
+  function handleMedicineSelect(data) {
 
 
-  function handleMedicineSelect(data){
-
-
+    // Medicine ID
 
     updateItem({
 
-      target:{
+      target: {
 
-        name:"medicineId",
+        name:
+          "medicineId",
 
-        value:data.id
+        value:
+          data.id,
 
-      }
+      },
 
     });
 
 
 
+    // Medicine Name
 
     updateItem({
 
-      target:{
+      target: {
 
-        name:"medicine",
+        name:
+          "medicine",
 
-        value:data.name
+        value:
+          data.name,
 
-      }
+      },
 
     });
 
 
 
-
+    // Medicine Price
 
     updateItem({
 
-      target:{
+      target: {
 
-        name:"rate",
+        name:
+          "rate",
 
-        value:data.price
+        value:
+          data.price,
 
-      }
+      },
 
     });
-
 
 
   }
-
-
 
 
 
@@ -86,12 +93,14 @@ export default function AddMedicine({
     <section>
 
 
-      <h3 className="
-      mb-3
-      text-sm
-      font-semibold
-      text-slate-700
-      ">
+      <h3
+        className="
+        mb-3
+        text-sm
+        font-semibold
+        text-slate-700
+        "
+      >
 
         Add Medicine
 
@@ -100,14 +109,20 @@ export default function AddMedicine({
 
 
 
-      <div className="
-      rounded-xl
-      bg-sky-50
-      p-4
-      ">
+      <div
+        className="
+        rounded-xl
+        bg-sky-50
+        p-4
+        "
+      >
 
 
 
+
+        {/* =========================
+            MEDICINE SEARCH
+        ========================= */}
 
         <MedicineSearchInput
 
@@ -117,18 +132,43 @@ export default function AddMedicine({
           }
 
 
-          onChange={(value)=>{
+          onChange={(value) => {
 
+
+            // User manually medicine name লিখলে
+            // name update হবে
 
             updateItem({
 
-              target:{
+              target: {
 
-                name:"medicine",
+                name:
+                  "medicine",
 
-                value
+                value:
+                  value,
 
-              }
+              },
+
+            });
+
+
+
+            // Important:
+            // manually name change করলে
+            // আগের selected medicineId clear হবে
+
+            updateItem({
+
+              target: {
+
+                name:
+                  "medicineId",
+
+                value:
+                  "",
+
+              },
 
             });
 
@@ -136,11 +176,9 @@ export default function AddMedicine({
           }}
 
 
-
           onSelect={
             handleMedicineSelect
           }
-
 
 
         />
@@ -150,15 +188,21 @@ export default function AddMedicine({
 
 
 
+        {/* =========================
+            QTY / RATE / DISCOUNT
+        ========================= */}
 
-        <div className="
-        mt-3
-        grid
-        grid-cols-3
-        gap-3
-        ">
+        <div
+          className="
+          mt-3
+          grid
+          grid-cols-3
+          gap-3
+          "
+        >
 
 
+          {/* QTY */}
 
           <Input
 
@@ -181,6 +225,7 @@ export default function AddMedicine({
 
 
 
+          {/* RATE */}
 
           <Input
 
@@ -203,6 +248,7 @@ export default function AddMedicine({
 
 
 
+          {/* DISCOUNT */}
 
           <Input
 
@@ -223,7 +269,6 @@ export default function AddMedicine({
           />
 
 
-
         </div>
 
 
@@ -231,6 +276,9 @@ export default function AddMedicine({
 
 
 
+        {/* =========================
+            ADD BUTTON
+        ========================= */}
 
         <button
 
@@ -250,13 +298,11 @@ export default function AddMedicine({
           font-semibold
           text-white
           "
-
         >
 
           + Add Medicine
 
         </button>
-
 
 
       </div>

@@ -7,10 +7,17 @@ export const emptyCustomer = {
 };
 
 export const emptyMedicine = {
+
+  medicineId: "",
+
   medicine: "",
+
   qty: "",
+
   rate: "",
+
   dis: "",
+
 };
 
 export const defaultOptions = {

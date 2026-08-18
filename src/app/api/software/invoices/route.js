@@ -24,6 +24,54 @@ export const runtime = "nodejs";
 
 
 
+// =========================
+// NORMALIZE MEDICINE NAME
+// =========================
+
+function normalizeMedicineName(text) {
+
+  return String(text || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+
+}
+
+
+
+// =========================
+// FORMAT DISPLAY NAME
+// =========================
+
+function formatMedicineName(text) {
+
+  return String(text || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase()
+    .replace(
+      /\b[a-z]/g,
+      (char) => char.toUpperCase()
+    );
+
+}
+
+
+
+// =========================
+// ESCAPE REGEX
+// =========================
+
+function escapeRegex(text) {
+
+  return String(text).replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+  );
+
+}
+
+
 
 // =========================
 // POST
@@ -38,7 +86,7 @@ export async function POST(request) {
 
 
     // =========================
-    // LOGIN SESSION
+    // SESSION
     // =========================
 
     const cookieStore =
@@ -124,7 +172,6 @@ export async function POST(request) {
 
 
 
-
     // =========================
     // CUSTOMER DATA
     // =========================
@@ -144,9 +191,8 @@ export async function POST(request) {
 
 
 
-
     // =========================
-    // CUSTOMER AUTO ADD / UPDATE
+    // CUSTOMER ADD / UPDATE
     // =========================
 
     if (
@@ -160,46 +206,23 @@ export async function POST(request) {
         });
 
 
-
-      // =========================
-      // EXISTING USER
-      // =========================
-
       if (existingCustomer) {
-
-
-        // শুধু customer role হলে
-        // invoice থেকে name update হবে
 
         if (
           existingCustomer.role ===
-          "customer"
+          "customer" &&
+          existingCustomer.name !==
+          customerName
         ) {
 
-          if (
-            existingCustomer.name !==
-            customerName
-          ) {
+          existingCustomer.name =
+            customerName;
 
-            existingCustomer.name =
-              customerName;
-
-            await existingCustomer.save();
-
-          }
+          await existingCustomer.save();
 
         }
 
-
-        // salesman / manager / admin
-        // হলে কোনো account change হবে না
-
       }
-
-
-      // =========================
-      // NEW CUSTOMER
-      // =========================
 
       else {
 
@@ -225,153 +248,11 @@ export async function POST(request) {
 
 
 
-
     // =========================
-    // CHECK MEDICINE PRICE UPDATE
-    // =========================
-
-    if (
-      Array.isArray(
-        data.medicines
-      )
-    ) {
-
-      for (
-        const medicine of data.medicines
-      ) {
-
-
-        if (
-          !medicine.medicineId
-        ) {
-
-          continue;
-
-        }
-
-
-
-        const existingMedicine =
-          await Medicine.findById(
-            medicine.medicineId
-          )
-            .lean();
-
-
-        if (
-          !existingMedicine
-        ) {
-
-          continue;
-
-        }
-
-
-
-        const oldPrice =
-          Number(
-            existingMedicine.salePrice || 0
-          );
-
-
-        const newPrice =
-          Number(
-            medicine.rate || 0
-          );
-
-
-
-        // =========================
-        // SAME PRICE
-        // =========================
-
-        if (
-          oldPrice === newPrice
-        ) {
-
-          continue;
-
-        }
-
-
-
-        // =========================
-        // DUPLICATE PENDING CHECK
-        // =========================
-
-        const alreadyPending =
-          await MedicineUpdate.findOne({
-
-            medicineId:
-              existingMedicine._id,
-
-            oldPrice,
-
-            newPrice,
-
-            status:
-              "pending",
-
-          });
-
-
-        if (
-          alreadyPending
-        ) {
-
-          continue;
-
-        }
-
-
-
-        // =========================
-        // CREATE PRICE UPDATE
-        // =========================
-
-        await MedicineUpdate.create({
-
-          type:
-            "price_update",
-
-          medicineId:
-            existingMedicine._id,
-
-          medicineName:
-            existingMedicine.name,
-
-          oldPrice,
-
-          newPrice,
-
-          status:
-            "pending",
-
-          createdBy: {
-
-            name:
-              user.name,
-
-            mobile:
-              user.mobile,
-
-          },
-
-        });
-
-      }
-
-    }
-
-
-
-
-    // =========================
-    // FINAL INVOICE DATA
+    // INVOICE DATA
     // =========================
 
     const invoiceData = {
-
 
       invoiceNo:
         String(
@@ -473,7 +354,6 @@ export async function POST(request) {
 
 
 
-
     // =========================
     // SAVE INVOICE
     // =========================
@@ -483,6 +363,415 @@ export async function POST(request) {
         invoiceData
       );
 
+
+
+    // =========================================
+    // MEDICINE CHECK
+    // ONLY MAIN MEDICINE COLLECTION
+    // =========================================
+
+    try {
+
+      if (
+        Array.isArray(
+          data.medicines
+        )
+      ) {
+
+        for (
+          const medicine of data.medicines
+        ) {
+
+          const medicineName =
+            String(
+              medicine.medicine || ""
+            )
+              .trim()
+              .replace(/\s+/g, " ");
+
+
+          const newPrice =
+            Number(
+              medicine.rate
+            );
+
+
+          if (!medicineName) {
+
+            continue;
+
+          }
+
+
+          if (
+            !Number.isFinite(newPrice) ||
+            newPrice < 0
+          ) {
+
+            continue;
+
+          }
+
+
+
+          const searchName =
+            normalizeMedicineName(
+              medicineName
+            );
+
+
+
+          // =================================
+          // STEP 1:
+          // medicineId থাকলে ID দিয়ে
+          // main Medicine collection check
+          // =================================
+
+          let existingMedicine =
+            null;
+
+
+          if (
+            medicine.medicineId
+          ) {
+
+            try {
+
+              const medicineById =
+                await Medicine.findById(
+                  medicine.medicineId
+                )
+                  .lean();
+
+
+              // Stale ID যেন ভুল medicine
+              // হিসেবে ধরা না হয়
+
+              if (
+                medicineById &&
+                normalizeMedicineName(
+                  medicineById.name
+                ) === searchName
+              ) {
+
+                existingMedicine =
+                  medicineById;
+
+              }
+
+            }
+
+            catch (idError) {
+
+              console.log(
+                "Medicine ID lookup skipped:",
+                medicine.medicineId
+              );
+
+            }
+
+          }
+
+
+
+          // =================================
+          // STEP 2:
+          // ID দিয়ে না পাওয়া গেলে
+          // exact searchName check
+          // =================================
+
+          if (!existingMedicine) {
+
+            existingMedicine =
+              await Medicine.findOne({
+
+                searchName:
+                  searchName,
+
+                isActive:
+                  true,
+
+              })
+                .lean();
+
+          }
+
+
+
+          console.log(
+            "MEDICINE CHECK:",
+            {
+              invoiceName:
+                medicineName,
+
+              medicineId:
+                medicine.medicineId || null,
+
+              invoicePrice:
+                newPrice,
+
+              found:
+                Boolean(
+                  existingMedicine
+                ),
+
+              mainName:
+                existingMedicine?.name,
+
+              mainPrice:
+                existingMedicine?.salePrice,
+            }
+          );
+
+
+
+          // =================================
+          // MEDICINE EXISTS
+          // =================================
+
+          if (existingMedicine) {
+
+            const oldPrice =
+              Number(
+                existingMedicine.salePrice || 0
+              );
+
+
+
+            // =========================
+            // SAME NAME + SAME PRICE
+            // NOTHING
+            // =========================
+
+            if (
+              oldPrice === newPrice
+            ) {
+
+              console.log(
+                "SAME MEDICINE + SAME PRICE:",
+                existingMedicine.name
+              );
+
+              continue;
+
+            }
+
+
+
+            // =========================
+            // SAME NAME +
+            // DIFFERENT PRICE
+            //
+            // PRICE UPDATE REQUEST
+            // =========================
+
+            console.log(
+              "PRICE UPDATE DETECTED:",
+              existingMedicine.name,
+              oldPrice,
+              "=>",
+              newPrice
+            );
+
+
+
+            const existingPending =
+              await MedicineUpdate.findOne({
+
+                medicineId:
+                  existingMedicine._id,
+
+                type:
+                  "price_update",
+
+                newPrice:
+                  newPrice,
+
+                status:
+                  "pending",
+
+                "createdBy.mobile":
+                  user.mobile,
+
+              })
+                .lean();
+
+
+
+            if (existingPending) {
+
+              console.log(
+                "PRICE UPDATE ALREADY PENDING:",
+                existingMedicine.name
+              );
+
+              continue;
+
+            }
+
+
+
+            await MedicineUpdate.create({
+
+              medicineId:
+                existingMedicine._id,
+
+              medicineName:
+                existingMedicine.name,
+
+              type:
+                "price_update",
+
+              oldPrice:
+                oldPrice,
+
+              newPrice:
+                newPrice,
+
+              createdBy: {
+
+                name:
+                  user.name || "",
+
+                mobile:
+                  user.mobile || "",
+
+              },
+
+              status:
+                "pending",
+
+            });
+
+
+
+            console.log(
+              "PRICE UPDATE REQUEST CREATED:",
+              existingMedicine.name,
+              oldPrice,
+              "=>",
+              newPrice
+            );
+
+
+            continue;
+
+          }
+
+
+
+          // =================================
+          // MAIN MEDICINE COLLECTION-এ
+          // MEDICINE নেই
+          //
+          // NEW MEDICINE REQUEST
+          // =================================
+
+          const displayName =
+            formatMedicineName(
+              medicineName
+            );
+
+
+          const nameRegex =
+            new RegExp(
+
+              `^${escapeRegex(
+                displayName
+              )}$`,
+
+              "i"
+
+            );
+
+
+
+          const existingNewPending =
+            await MedicineUpdate.findOne({
+
+              medicineName:
+                nameRegex,
+
+              type:
+                "new_medicine",
+
+              status:
+                "pending",
+
+              "createdBy.mobile":
+                user.mobile,
+
+            })
+              .lean();
+
+
+
+          if (existingNewPending) {
+
+            console.log(
+              "NEW MEDICINE ALREADY PENDING:",
+              displayName
+            );
+
+            continue;
+
+          }
+
+
+
+          await MedicineUpdate.create({
+
+            medicineId:
+              null,
+
+            medicineName:
+              displayName,
+
+            type:
+              "new_medicine",
+
+            oldPrice:
+              null,
+
+            newPrice:
+              newPrice,
+
+            createdBy: {
+
+              name:
+                user.name || "",
+
+              mobile:
+                user.mobile || "",
+
+            },
+
+            status:
+              "pending",
+
+          });
+
+
+
+          console.log(
+            "NEW MEDICINE REQUEST CREATED:",
+            displayName
+          );
+
+        }
+
+      }
+
+    }
+
+    catch (medicineError) {
+
+      console.error(
+        "INVOICE MEDICINE CHECK ERROR:",
+        medicineError
+      );
+
+    }
 
 
 
@@ -542,6 +831,9 @@ export async function POST(request) {
 
 
 
+    // =========================
+    // SUCCESS
+    // =========================
 
     return Response.json(
       {
@@ -583,7 +875,6 @@ export async function POST(request) {
   }
 
 }
-
 
 
 
