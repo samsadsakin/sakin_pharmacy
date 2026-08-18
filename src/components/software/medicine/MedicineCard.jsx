@@ -7,31 +7,73 @@ export default function MedicineCard({
 
   onDelete,
 
-  onEdit
+  onEdit,
 
 }) {
 
 
+
   return (
 
+
     <div
+
       className="
       rounded-xl
       border
+      border-slate-100
       bg-white
       p-4
       shadow-sm
       "
+
     >
 
 
-      <div className="flex items-start justify-between gap-4">
 
 
-        <div>
 
 
-          <h3 className="font-semibold text-slate-800">
+
+      <div
+
+        className="
+        flex
+        items-start
+        justify-between
+        gap-4
+        "
+
+      >
+
+
+
+
+
+
+        {/* LEFT SIDE */}
+
+
+        <div
+
+          className="
+          min-w-0
+          "
+
+        >
+
+
+
+
+          <h3
+
+            className="
+            truncate
+            font-semibold
+            text-slate-800
+            "
+
+          >
 
             {medicine.medicineName}
 
@@ -39,23 +81,125 @@ export default function MedicineCard({
 
 
 
+
+
+
+
+          <span
+
+            className={`
+            mt-2
+            inline-flex
+            rounded-full
+            px-2.5
+            py-1
+            text-xs
+            font-medium
+
+            ${
+              medicine.type === "new_medicine"
+
+              ?
+
+              "bg-green-50 text-green-700"
+
+              :
+
+              "bg-blue-50 text-blue-700"
+
+            }
+
+            `}
+
+          >
+
+
+            {
+              medicine.type === "new_medicine"
+
+              ?
+
+              "New Medicine"
+
+              :
+
+              "Price Update"
+
+            }
+
+
+
+          </span>
+
+
+
+
+
+
+        </div>
+
+
+
+
+
+
+
+
+
+        {/* PRICE */}
+
+
+        <div
+
+          className="
+          text-right
+          "
+
+        >
+
+
+
+
+
           {
-            medicine.type === "new_medicine" ? (
-
-              <p className="mt-1 text-sm text-green-600">
-
-                New Medicine
-
-              </p>
-
-            ) : (
+            medicine.type === "price_update" && (
 
 
-              <p className="mt-1 text-sm text-blue-600">
+              <>
 
-                Price Update
+                <p
 
-              </p>
+                  className="
+                  text-xs
+                  text-slate-400
+                  "
+
+                >
+
+                  Old Price
+
+                </p>
+
+
+
+
+                <p
+
+                  className="
+                  text-sm
+                  text-slate-400
+                  line-through
+                  "
+
+                >
+
+                  ৳ {medicine.oldPrice}
+
+                </p>
+
+
+
+              </>
 
 
             )
@@ -64,47 +208,35 @@ export default function MedicineCard({
 
 
 
-        </div>
 
 
 
 
+          <p
 
-        <div className="text-right">
+            className="
+            mt-1
+            text-lg
+            font-bold
+            text-[#123B6D]
+            "
 
+          >
 
-          {
-            medicine.type === "price_update" && (
-
-              <>
-
-                <p className="text-xs text-slate-400">
-                  Old Price
-                </p>
-
-
-                <p className="text-sm line-through text-slate-500">
-
-                  {medicine.oldPrice}
-
-                </p>
-
-
-              </>
-          )}
-
-
-
-
-
-          <p className="mt-1 text-lg font-bold text-slate-800">
-
-            {medicine.newPrice}
+            ৳ {medicine.newPrice}
 
           </p>
 
 
+
+
+
+
         </div>
+
+
+
+
 
 
 
@@ -114,25 +246,157 @@ export default function MedicineCard({
 
 
 
+
+
+
+
+      {/* CREATED INFO */}
+
+
       <div
+
+        className="
+        mt-4
+        rounded-lg
+        bg-slate-50
+        px-3
+        py-2
+        text-xs
+        text-slate-500
+        "
+
+      >
+
+
+
+        <div
+
+          className="
+          flex
+          justify-between
+          "
+
+        >
+
+
+          <span>
+
+            Added By
+
+          </span>
+
+
+
+          <span
+
+            className="
+            font-medium
+            text-slate-700
+            "
+
+          >
+
+            {
+              medicine.createdBy?.name || "-"
+            }
+
+          </span>
+
+
+
+        </div>
+
+
+
+
+
+
+
+        <div
+
+          className="
+          mt-1
+          flex
+          justify-between
+          "
+
+        >
+
+
+          <span>
+
+            Mobile
+
+          </span>
+
+
+
+          <span
+
+            className="
+            font-medium
+            text-slate-700
+            "
+
+          >
+
+            {
+              medicine.createdBy?.mobile || "-"
+            }
+
+          </span>
+
+
+
+        </div>
+
+
+
+
+      </div>
+
+
+
+
+
+
+
+
+
+      {/* ACTION */}
+
+
+
+      <div
+
         className="
         mt-4
         flex
         gap-2
         "
+
       >
+
+
+
 
 
         <button
 
-          onClick={()=>
+
+          type="button"
+
+
+          onClick={() =>
             onEdit(medicine)
           }
 
+
+
           className="
+          flex-1
           rounded-lg
           bg-blue-50
-          px-4
           py-2
           text-sm
           font-medium
@@ -150,17 +414,25 @@ export default function MedicineCard({
 
 
 
+
+
+
         <button
 
-          onClick={()=>
+
+          type="button"
+
+
+          onClick={() =>
             onDelete(medicine)
           }
 
 
+
           className="
+          flex-1
           rounded-lg
           bg-red-50
-          px-4
           py-2
           text-sm
           font-medium
@@ -170,9 +442,12 @@ export default function MedicineCard({
 
         >
 
-          Remove
+          Delete
 
         </button>
+
+
+
 
 
 
@@ -180,8 +455,14 @@ export default function MedicineCard({
 
 
 
+
+
+
+
     </div>
 
+
   );
+
 
 }

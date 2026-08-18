@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 const UserSchema = new mongoose.Schema(
   {
     // =========================
-    // CUSTOMER NAME
+    // USER NAME
     // =========================
 
     name: {
@@ -58,7 +58,7 @@ const UserSchema = new mongoose.Schema(
 
 
     // =========================
-    // STAFF OTP VERIFIED?
+    // STAFF VERIFIED?
     // =========================
 
     staffVerified: {
@@ -80,6 +80,7 @@ const UserSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
 
 
 const User =

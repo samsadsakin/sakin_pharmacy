@@ -1,26 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 
 export default function MedicineSearchBox({
-  onAddPending
+  onAddPending,
 }) {
 
 
-  const [search,setSearch] =
+  const [search, setSearch] =
     useState("");
 
-  const [results,setResults] =
+
+  const [results, setResults] =
     useState([]);
 
 
-  const [selectedMedicine,setSelectedMedicine] =
-    useState(null);
+  const [
+    selectedMedicine,
+    setSelectedMedicine
+  ] = useState(null);
 
 
-  const [price,setPrice] =
+  const [price, setPrice] =
     useState("");
+
+
 
 
 
@@ -28,10 +36,10 @@ export default function MedicineSearchBox({
   // SEARCH
   // =========================
 
-  useEffect(()=>{
+  useEffect(() => {
 
 
-    if(!search.trim()){
+    if (!search.trim()) {
 
       setResults([]);
 
@@ -42,16 +50,25 @@ export default function MedicineSearchBox({
 
 
     const timer =
-      setTimeout(async()=>{
+      setTimeout(async () => {
 
 
-        try{
+        try {
 
 
           const res =
             await fetch(
-              `/api/software/medicines/search?q=${search}`
+
+              `/api/software/medicines/search?q=${encodeURIComponent(
+                search
+              )}`,
+
+              {
+                cache: "no-store",
+              }
+
             );
+
 
 
           const data =
@@ -59,35 +76,47 @@ export default function MedicineSearchBox({
 
 
 
-          if(data.success){
+          if (data.success) {
 
             setResults(
-              data.medicines
+              data.medicines || []
             );
 
           }
 
+          else {
+
+            setResults([]);
+
+          }
 
 
         }
-        catch(error){
 
-          console.log(error);
+        catch (error) {
+
+
+          console.log(
+            "Medicine Search Error:",
+            error
+          );
+
+
+          setResults([]);
+
 
         }
 
 
-
-      },400);
-
-
-
-    return ()=>clearTimeout(timer);
+      }, 400);
 
 
 
-  },[search]);
+    return () =>
+      clearTimeout(timer);
 
+
+  }, [search]);
 
 
 
@@ -95,11 +124,16 @@ export default function MedicineSearchBox({
 
 
 
+  // =========================
+  // SELECT MEDICINE
+  // =========================
 
-  function selectMedicine(item){
+  function selectMedicine(item) {
 
 
-    setSelectedMedicine(item);
+    setSelectedMedicine(
+      item
+    );
 
 
     setSearch(
@@ -123,10 +157,14 @@ export default function MedicineSearchBox({
 
 
 
-  function handleAdd(){
+  // =========================
+  // ADD TO PENDING
+  // =========================
+
+  function handleAdd() {
 
 
-    if(!search.trim()){
+    if (!search.trim()) {
 
       return;
 
@@ -134,23 +172,38 @@ export default function MedicineSearchBox({
 
 
 
-    // Existing medicine
+    if (
+      price === "" ||
+      Number(price) < 0
+    ) {
 
-    if(selectedMedicine){
+      return;
+
+    }
 
 
 
-      if(
-        Number(price)
-        ===
+
+
+    // =========================
+    // EXISTING MEDICINE
+    // =========================
+
+    if (selectedMedicine) {
+
+
+      if (
+        Number(price) ===
         Number(
           selectedMedicine.salePrice
         )
-      ){
+      ) {
+
 
         alert(
           "Price is already same. No update required."
         );
+
 
         return;
 
@@ -162,53 +215,57 @@ export default function MedicineSearchBox({
 
       onAddPending({
 
-        type:"price_update",
+        type:
+          "price_update",
+
 
         medicineId:
-        selectedMedicine._id,
+          selectedMedicine._id,
 
 
         medicineName:
-        selectedMedicine.name,
+          selectedMedicine.name,
 
 
         oldPrice:
-        selectedMedicine.salePrice,
+          selectedMedicine.salePrice,
 
 
         newPrice:
-        Number(price)
+          Number(price),
 
       });
-
 
 
     }
 
 
 
-    // New medicine
+    // =========================
+    // NEW MEDICINE
+    // =========================
 
-
-    else{
+    else {
 
 
       onAddPending({
 
-        type:"new_medicine",
+        type:
+          "new_medicine",
+
 
         medicineName:
-        search,
+          search.trim(),
 
 
-        oldPrice:null,
+        oldPrice:
+          null,
 
 
         newPrice:
-        Number(price)
+          Number(price),
 
       });
-
 
 
     }
@@ -216,6 +273,8 @@ export default function MedicineSearchBox({
 
 
 
+
+    // RESET
 
     setSearch("");
 
@@ -223,8 +282,11 @@ export default function MedicineSearchBox({
 
     setSelectedMedicine(null);
 
+    setResults([]);
+
 
   }
+
 
 
 
@@ -236,12 +298,14 @@ export default function MedicineSearchBox({
     <div>
 
 
-      <h2 className="
+      <h2
+        className="
         mb-4
         text-lg
         font-semibold
         text-[#123B6D]
-      ">
+        "
+      >
 
         Add / Update Medicine
 
@@ -251,7 +315,9 @@ export default function MedicineSearchBox({
 
 
 
-      {/* Search */}
+      {/* =========================
+          SEARCH
+      ========================= */}
 
       <div className="relative">
 
@@ -260,22 +326,27 @@ export default function MedicineSearchBox({
 
           value={search}
 
+          onChange={(e) => {
 
-          onChange={(e)=>{
 
             setSearch(
               e.target.value
             );
 
-            setSelectedMedicine(null);
+
+            setSelectedMedicine(
+              null
+            );
+
+
+            setPrice("");
+
 
           }}
 
+          placeholder="Search medicine name..."
 
-          placeholder="
-          Search medicine name...
-          "
-
+          autoComplete="off"
 
           className="
           w-full
@@ -292,7 +363,6 @@ export default function MedicineSearchBox({
           focus:bg-white
           "
 
-
         />
 
 
@@ -300,28 +370,46 @@ export default function MedicineSearchBox({
 
 
 
+
+        {/* =========================
+            SEARCH RESULT
+
+            MOBILE = TOP
+            TABLET / PC = RIGHT
+        ========================= */}
+
         {
           results.length > 0 && (
 
             <div
               className="
               absolute
-              z-30
-              mt-2
+              bottom-full
+              left-0
+              z-50
+              mb-2
+              max-h-64
               w-full
-              overflow-hidden
+              overflow-y-auto
               rounded-xl
               bg-white
+              p-1
               shadow-lg
               ring-1
               ring-slate-100
+
+              md:bottom-auto
+              md:left-full
+              md:top-0
+              md:mb-0
+              md:ml-3
+              md:w-80
               "
             >
 
 
               {
-                results.map((item)=>(
-
+                results.map((item) => (
 
                   <button
 
@@ -329,30 +417,35 @@ export default function MedicineSearchBox({
 
                     type="button"
 
-                    onClick={()=>
+                    onClick={() =>
                       selectMedicine(item)
                     }
-
 
                     className="
                     flex
                     w-full
                     items-center
                     justify-between
-                    px-4
-                    py-3
+                    gap-3
+                    rounded-lg
+                    px-3
+                    py-2.5
                     text-left
+                    transition
                     hover:bg-blue-50
                     "
-
                   >
 
 
-                    <span className="
+                    <span
+                      className="
+                      min-w-0
+                      flex-1
                       text-sm
                       font-medium
                       text-slate-700
-                    ">
+                      "
+                    >
 
                       {item.name}
 
@@ -360,31 +453,31 @@ export default function MedicineSearchBox({
 
 
 
-                    <span className="
+                    <span
+                      className="
+                      shrink-0
                       rounded-full
                       bg-green-50
-                      px-3
+                      px-2.5
                       py-1
                       text-xs
                       font-semibold
                       text-green-700
-                    ">
+                      "
+                    >
 
                       ৳ {item.salePrice}
 
                     </span>
 
 
-
                   </button>
-
 
                 ))
               }
 
 
             </div>
-
 
           )
         }
@@ -399,59 +492,65 @@ export default function MedicineSearchBox({
 
 
 
-      {/* Selected medicine */}
+      {/* =========================
+          SELECTED MEDICINE
+      ========================= */}
 
       {
         selectedMedicine && (
 
-
-          <div className="
+          <div
+            className="
             mt-4
             rounded-xl
             bg-blue-50
             p-4
-          ">
+            "
+          >
 
 
-            <p className="
+            <p
+              className="
               text-xs
               font-medium
               text-blue-600
-            ">
+              "
+            >
 
               Existing Medicine Found
 
             </p>
 
 
-            <p className="
+            <p
+              className="
               mt-1
               font-semibold
               text-slate-800
-            ">
+              "
+            >
 
               {selectedMedicine.name}
 
             </p>
 
 
-            <p className="
+            <p
+              className="
               mt-1
               text-sm
               text-slate-500
-            ">
+              "
+            >
 
-              Current Price:
-              ৳ {selectedMedicine.salePrice}
+              Current Price: ৳ {selectedMedicine.salePrice}
 
             </p>
 
 
           </div>
 
-
         )
-
       }
 
 
@@ -461,20 +560,29 @@ export default function MedicineSearchBox({
 
 
 
-      {/* Price */}
+      {/* =========================
+          PRICE
+      ========================= */}
 
       <div className="mt-5">
 
 
-        <label className="
+        <label
+          className="
           text-sm
           font-medium
           text-slate-600
-        ">
+          "
+        >
 
-          New Price
+          {
+            selectedMedicine
+              ? "New Price"
+              : "Price"
+          }
 
         </label>
+
 
 
         <input
@@ -483,11 +591,11 @@ export default function MedicineSearchBox({
 
           value={price}
 
-
-          onChange={(e)=>
-            setPrice(e.target.value)
+          onChange={(e) =>
+            setPrice(
+              e.target.value
+            )
           }
-
 
           className="
           mt-2
@@ -513,10 +621,18 @@ export default function MedicineSearchBox({
 
 
 
+
+      {/* =========================
+          BUTTON
+      ========================= */}
+
       <button
 
-        onClick={handleAdd}
+        type="button"
 
+        onClick={
+          handleAdd
+        }
 
         className="
         mt-5
@@ -528,16 +644,17 @@ export default function MedicineSearchBox({
         font-semibold
         text-white
         transition
-        hover:bg-[#0d2d55]
+        hover:bg-blue-900
         "
-
       >
 
-        Add To Pending
+        {
+          selectedMedicine
+            ? "Add Price Update"
+            : "Add New Medicine"
+        }
 
       </button>
-
-
 
 
     </div>

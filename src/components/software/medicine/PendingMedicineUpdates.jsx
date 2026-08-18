@@ -1,8 +1,17 @@
 "use client";
 
-import { useState } from "react";
+
+import {
+  useState,
+} from "react";
+
+
+import Swal from "sweetalert2";
+
 
 import MedicineCard from "./MedicineCard";
+
+
 
 
 
@@ -19,57 +28,70 @@ export default function PendingMedicineUpdates({
 }) {
 
 
-  const [deleting,setDeleting] =
-    useState(null);
+
+  const [
+    deleting,
+    setDeleting
+  ] = useState(null);
+
+
+
+  const [
+    updating,
+    setUpdating
+  ] = useState(false);
+
+
+
+
+
+
 
 
 
   // =========================
-  // DELETE PENDING UPDATE
+  // DELETE UPDATE
   // =========================
+
 
   async function handleDelete(item){
-
-
-    const confirmDelete =
-      window.confirm(
-        "Remove this medicine update?"
-      );
-
-
-    if(!confirmDelete){
-      return;
-    }
-
 
 
     try{
 
 
-      setDeleting(
-        item._id
-      );
+      setDeleting(item._id);
+
+
 
 
 
       const res =
+
         await fetch(
 
           "/api/software/medicine-updates/delete",
 
           {
 
+
             method:"DELETE",
+
 
             headers:{
 
+
               "Content-Type":
+
               "application/json"
+
 
             },
 
 
-            body:JSON.stringify({
+            body:
+
+            JSON.stringify({
 
               id:item._id
 
@@ -82,8 +104,13 @@ export default function PendingMedicineUpdates({
 
 
 
+
+
+
       const data =
+
         await res.json();
+
 
 
 
@@ -96,16 +123,26 @@ export default function PendingMedicineUpdates({
 
 
       }
+
+
       else{
 
 
-        alert(
-          data.message ||
-          "Delete failed"
-        );
+        Swal.fire({
+
+          title:"Failed",
+
+          text:
+            data.message ||
+            "Delete failed",
+
+          icon:"error",
+
+        });
 
 
       }
+
 
 
 
@@ -115,14 +152,20 @@ export default function PendingMedicineUpdates({
     catch(error){
 
 
-      console.log(
-        error
-      );
+      console.log(error);
 
 
-      alert(
-        "Something went wrong"
-      );
+
+      Swal.fire({
+
+        title:"Error",
+
+        text:
+          "Something went wrong",
+
+        icon:"error",
+
+      });
 
 
     }
@@ -145,35 +188,186 @@ export default function PendingMedicineUpdates({
 
 
 
+
+
+
+
+
+
+  // =========================
+  // UPDATE ALL
+  // =========================
+
+
+  async function handleUpdateAll(){
+
+
+
+    try{
+
+
+      setUpdating(true);
+
+
+
+
+
+
+      const res =
+
+        await fetch(
+
+          "/api/software/medicine-updates/update-all",
+
+          {
+
+
+            method:"POST"
+
+
+          }
+
+        );
+
+
+
+
+
+
+
+      const data =
+
+        await res.json();
+
+
+
+
+
+
+      if(data.success){
+
+
+        onUpdateAll();
+
+
+
+      }
+
+
+      else{
+
+
+        Swal.fire({
+
+          title:"Failed",
+
+          text:
+            data.message ||
+            "Update failed",
+
+          icon:"error",
+
+        });
+
+
+      }
+
+
+
+
+
+
+    }
+
+    catch(error){
+
+
+
+      console.log(error);
+
+
+
+      Swal.fire({
+
+        title:"Error",
+
+        text:
+          "Something went wrong",
+
+        icon:"error",
+
+      });
+
+
+
+    }
+
+    finally{
+
+
+      setUpdating(false);
+
+
+    }
+
+
+  }
+
+
+
+
+
+
+
+
+
   return (
 
-    <div className="
+
+    <section
+
+      className="
       rounded-2xl
       bg-white
       p-5
       shadow-sm
-    ">
+      "
+
+    >
+
+
 
 
 
       {/* HEADER */}
 
-      <div className="
+
+      <div
+
+        className="
         mb-5
         flex
         items-center
         justify-between
-      ">
+        gap-3
+        "
+
+      >
+
 
 
         <div>
 
 
-          <h2 className="
+          <h2
+
+            className="
             text-lg
             font-bold
             text-[#123B6D]
-          ">
+            "
+
+          >
 
             Pending Medicine Changes
 
@@ -181,15 +375,21 @@ export default function PendingMedicineUpdates({
 
 
 
-          <p className="
+
+          <p
+
+            className="
             mt-1
             text-xs
             text-slate-500
-          ">
+            "
+
+          >
 
             Review medicine updates before applying
 
           </p>
+
 
 
         </div>
@@ -206,7 +406,15 @@ export default function PendingMedicineUpdates({
 
             <button
 
-              onClick={onUpdateAll}
+
+              type="button"
+
+
+              onClick={handleUpdateAll}
+
+
+              disabled={updating}
+
 
 
               className="
@@ -219,13 +427,30 @@ export default function PendingMedicineUpdates({
               text-white
               transition
               hover:bg-green-700
+              disabled:opacity-60
               "
 
             >
 
-              Update All
+
+
+              {
+                updating
+
+                ?
+
+                "Updating..."
+
+                :
+
+                "Update All"
+
+              }
+
+
 
             </button>
+
 
 
           )
@@ -241,24 +466,35 @@ export default function PendingMedicineUpdates({
 
 
 
-      {/* EMPTY */}
+
 
       {
-        medicines.length === 0 ? (
+        medicines.length === 0 ?
 
 
-          <div className="
+
+        (
+
+          <div
+
+            className="
             rounded-xl
             bg-slate-50
             p-8
             text-center
-          ">
+            "
+
+          >
 
 
-            <p className="
+            <p
+
+              className="
               text-sm
               text-slate-500
-            ">
+              "
+
+            >
 
               No pending medicine changes
 
@@ -268,8 +504,9 @@ export default function PendingMedicineUpdates({
           </div>
 
 
-
         )
+
+
 
         :
 
@@ -278,13 +515,20 @@ export default function PendingMedicineUpdates({
         (
 
 
-          <div className="
+          <div
+
+            className="
             space-y-4
-          ">
+            "
+
+          >
+
+
 
 
             {
               medicines.map(
+
                 (medicine)=>(
 
 
@@ -294,6 +538,7 @@ export default function PendingMedicineUpdates({
                     key={
                       medicine._id
                     }
+
 
 
                     medicine={
@@ -313,16 +558,27 @@ export default function PendingMedicineUpdates({
                     }
 
 
+
+                    deleting={
+                      deleting
+                    }
+
+
+
                   />
 
 
                 )
+
               )
             }
 
 
 
+
+
           </div>
+
 
 
         )
@@ -333,8 +589,11 @@ export default function PendingMedicineUpdates({
 
 
 
-    </div>
+
+    </section>
+
 
   );
+
 
 }

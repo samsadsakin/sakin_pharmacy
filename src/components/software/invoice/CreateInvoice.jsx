@@ -1,6 +1,3 @@
-// src/components/software/invoice/CreateInvoice.jsx
-
-
 "use client";
 
 
@@ -10,12 +7,14 @@ import {
   useRef,
 } from "react";
 
+
 import {
   useRouter,
 } from "next/navigation";
 
 
 import Swal from "sweetalert2";
+
 
 
 import {
@@ -56,17 +55,24 @@ let nextId = 1;
 
 
 
+
 export default function CreateInvoice() {
 
 
   const router =
     useRouter();
-  const invoiceLoaded = useRef(false);
+
+
+  const invoiceLoaded =
+    useRef(false);
 
 
 
 
-  // ================= INVOICE INFO =================
+
+  // =========================
+  // INVOICE INFO
+  // =========================
 
 
   const [invoiceNo, setInvoiceNo] =
@@ -90,6 +96,7 @@ export default function CreateInvoice() {
 
 
 
+
   const [invoiceType, setInvoiceType] =
     useState("regular");
 
@@ -99,7 +106,11 @@ export default function CreateInvoice() {
 
 
 
-  // ================= CUSTOMER =================
+
+
+  // =========================
+  // CUSTOMER
+  // =========================
 
 
   const [customer, setCustomer] =
@@ -115,15 +126,20 @@ export default function CreateInvoice() {
 
 
 
-  // ================= MEDICINE =================
+
+
+  // =========================
+  // MEDICINE
+  // =========================
 
 
   const [item, setItem] =
     useState({
 
-      ...emptyMedicine
+      ...emptyMedicine,
 
     });
+
 
 
   const [rows, setRows] =
@@ -135,7 +151,10 @@ export default function CreateInvoice() {
 
 
 
-  // ================= PAYABLE =================
+
+  // =========================
+  // PAYABLE
+  // =========================
 
 
   const [payable, setPayable] =
@@ -147,7 +166,10 @@ export default function CreateInvoice() {
 
 
 
-  // ================= OPTIONS =================
+
+  // =========================
+  // OPTIONS
+  // =========================
 
 
   const [options, setOptions] =
@@ -160,10 +182,12 @@ export default function CreateInvoice() {
 
 
 
-
-
-
-  // ================= LOAD DATE =================
+  // =========================
+  // CONTINUE PART 2
+  // =========================
+  // =========================
+  // LOAD INITIAL DATA
+  // =========================
 
 
   useEffect(() => {
@@ -177,6 +201,7 @@ export default function CreateInvoice() {
 
 
     invoiceLoaded.current = true;
+
 
 
 
@@ -206,7 +231,14 @@ export default function CreateInvoice() {
 
 
 
-  //-------------number load-------------
+
+
+
+
+  // =========================
+  // LOAD INVOICE NUMBER
+  // =========================
+
 
   const loadInvoiceNumber = async () => {
 
@@ -236,11 +268,14 @@ export default function CreateInvoice() {
 
 
 
+
       if (data.success) {
 
 
         setInvoiceNo(
+
           data.invoiceNo
+
         );
 
 
@@ -254,19 +289,29 @@ export default function CreateInvoice() {
 
 
       console.log(
+
         "Invoice Number Error",
+
         error
+
       );
 
 
     }
 
 
-
   };
 
-  // ================= SELLER LOAD =================
 
+
+
+
+
+
+
+  // =========================
+  // LOAD SELLER
+  // =========================
 
 
   const loadSeller = async () => {
@@ -291,21 +336,28 @@ export default function CreateInvoice() {
 
 
 
+
       const data =
+
         await res.json();
+
+
 
 
 
       if (data.success) {
 
 
+
         setSeller({
 
           name:
+
             data.user.name,
 
 
           number:
+
             data.user.mobile,
 
 
@@ -316,14 +368,18 @@ export default function CreateInvoice() {
 
 
 
+
     }
 
     catch (error) {
 
 
       console.log(
+
         "Seller Load Error",
+
         error
+
       );
 
 
@@ -338,7 +394,216 @@ export default function CreateInvoice() {
 
 
 
-  // ================= CALCULATION =================
+
+
+  // =========================
+  // UPDATE CURRENT MEDICINE
+  // =========================
+
+
+  const updateItem = (e) => {
+
+
+    setItem({
+
+      ...item,
+
+
+      [e.target.name]:
+
+        e.target.value,
+
+
+    });
+
+
+  };
+
+
+
+
+
+
+
+
+
+
+  // =========================
+  // ADD MEDICINE
+  // =========================
+
+
+  const addMedicine = () => {
+
+
+    if (
+
+      !item.medicine ||
+
+      Number(item.qty) <= 0 ||
+
+      Number(item.rate) <= 0
+
+    ) {
+
+      return;
+
+    }
+
+
+
+
+
+    setRows([
+
+      ...rows,
+
+
+      {
+
+
+        id: nextId++,
+
+
+        medicineId:
+
+          item.medicineId || "",
+
+
+        medicine:
+
+          item.medicine,
+
+
+        qty:
+
+          item.qty,
+
+
+        rate:
+
+          item.rate,
+
+
+        dis:
+
+          item.dis,
+
+
+      }
+
+
+    ]);
+
+
+
+
+
+
+    setItem({
+
+      ...emptyMedicine
+
+    });
+
+
+
+  };
+
+
+
+
+
+
+
+
+
+
+  // =========================
+  // DELETE MEDICINE
+  // =========================
+
+
+  const deleteMedicine = (id) => {
+
+
+    setRows(
+
+      rows.filter(
+
+        (row) =>
+
+          row.id !== id
+
+      )
+
+    );
+
+
+  };
+
+
+
+
+
+
+
+
+
+
+  // =========================
+  // RESET INVOICE
+  // =========================
+
+
+  const resetInvoice = () => {
+
+
+    setCustomer({
+
+      ...emptyCustomer
+
+    });
+
+
+
+    setItem({
+
+      ...emptyMedicine
+
+    });
+
+
+
+    setRows([]);
+
+
+
+    setPayable("");
+
+
+
+    setOptions({
+
+      ...defaultOptions
+
+    });
+
+
+
+    nextId = 1;
+
+
+  };
+
+
+
+  // =========================
+  // CONTINUE PART 3
+  // =========================
+  // =========================
+  // CALCULATION
+  // =========================
 
 
   const total =
@@ -352,7 +617,6 @@ export default function CreateInvoice() {
       0
 
     );
-
 
 
 
@@ -375,6 +639,7 @@ export default function CreateInvoice() {
 
 
 
+
   const discount =
 
     Math.max(
@@ -390,146 +655,12 @@ export default function CreateInvoice() {
 
 
 
-  // ================= UPDATE MEDICINE =================
 
 
-  const updateItem = (e) => {
 
-
-    setItem({
-
-      ...item,
-
-      [e.target.name]:
-
-        e.target.value,
-
-
-    });
-
-
-  };
-
-
-
-
-
-
-  // ================= ADD MEDICINE =================
-
-
-  const addMedicine = () => {
-
-
-    if (
-
-      !item.medicine ||
-
-      !item.qty ||
-
-      !item.rate
-
-    ) {
-
-      return;
-
-    }
-
-
-
-    setRows([
-
-      ...rows,
-
-      {
-
-        id: nextId++,
-
-        ...item
-
-      }
-
-    ]);
-
-
-
-    setItem({
-
-      ...emptyMedicine
-
-    });
-
-
-  };
-
-
-  // ================= DELETE MEDICINE =================
-
-
-  const deleteMedicine = (id) => {
-
-
-    setRows(
-
-      rows.filter(
-
-        (row) =>
-
-          row.id !== id
-
-      )
-
-    );
-
-
-  };
-  // ================= RESET =================
-
-
-  const resetInvoice = () => {
-
-
-    setCustomer({
-
-      ...emptyCustomer
-
-    });
-
-
-    setItem({
-
-      ...emptyMedicine
-
-    });
-
-
-    setRows([]);
-
-
-    setPayable("");
-
-
-
-    setOptions({
-
-      ...defaultOptions
-
-    });
-
-
-    nextId = 1;
-
-
-  };
-
-
-
-
-
-
-
-
-  // ================= SAVE INVOICE =================
+  // =========================
+  // SAVE INVOICE
+  // =========================
 
 
   const saveInvoice = async () => {
@@ -537,6 +668,7 @@ export default function CreateInvoice() {
 
     const shouldPrint =
       options.print;
+
 
 
 
@@ -567,40 +699,79 @@ export default function CreateInvoice() {
 
 
 
+
       medicines:
 
 
         rows.map(
 
-          (row, index) => ({
+          (row, index) => (
 
 
-            sl: index + 1,
+
+            {
 
 
-            medicine:
-              row.medicine,
+              sl:
+
+                index + 1,
 
 
-            qty:
-              Number(row.qty),
+
+              medicine:
 
 
-            rate:
-              Number(row.rate),
+                row.medicine,
 
 
-            percentageDiscount:
-              Number(row.dis || 0),
+
+              medicineId:
 
 
-            amount:
-              getAmount(row),
+                row.medicineId || "",
 
 
-          })
+
+
+              qty:
+
+
+                Number(row.qty),
+
+
+
+
+              rate:
+
+
+                Number(row.rate),
+
+
+
+
+              percentageDiscount:
+
+
+                Number(row.dis || 0),
+
+
+
+
+              amount:
+
+
+                getAmount(row),
+
+
+
+            }
+
+
+          )
 
         ),
+
+
 
 
 
@@ -610,10 +781,14 @@ export default function CreateInvoice() {
       total,
 
 
+
       discount,
 
 
+
       payableAmount,
+
+
 
 
 
@@ -623,28 +798,40 @@ export default function CreateInvoice() {
 
 
         sms:
+
           options.sms,
 
 
 
         ...(options.sms && {
 
+
           smsType:
+
             options.smsType,
+
 
         }),
 
 
 
+
+
         print:
+
           options.print,
 
 
+
+
         paid:
+
           options.paid,
 
 
-      },
+      }
+
+
 
 
 
@@ -655,10 +842,17 @@ export default function CreateInvoice() {
 
 
 
+
+
+
     console.log(
+
       "Invoice Data:",
+
       data
+
     );
+
 
 
 
@@ -670,6 +864,9 @@ export default function CreateInvoice() {
     try {
 
 
+
+
+
       const res =
 
         await fetch(
@@ -678,23 +875,34 @@ export default function CreateInvoice() {
 
           {
 
+
             method: "POST",
+
 
 
             headers: {
 
+
               "Content-Type":
+
                 "application/json",
+
 
             },
 
 
+
             body:
+
               JSON.stringify(data),
+
+
 
           }
 
         );
+
+
 
 
 
@@ -711,12 +919,17 @@ export default function CreateInvoice() {
 
 
 
+
+
       if (!res.ok) {
+
 
 
         await Swal.fire({
 
+
           title: "Failed",
+
 
           text:
 
@@ -724,15 +937,22 @@ export default function CreateInvoice() {
 
             "Failed to save invoice",
 
+
           icon: "error",
 
+
+
         });
+
 
 
         return;
 
 
+
       }
+
+
 
 
 
@@ -756,15 +976,20 @@ export default function CreateInvoice() {
 
         await Swal.fire({
 
+
           title: "Error",
+
 
           text:
 
             "Invoice ID not found",
 
+
           icon: "error",
 
+
         });
+
 
 
         return;
@@ -777,8 +1002,16 @@ export default function CreateInvoice() {
 
 
 
+
+
+
       resetInvoice();
+
+
+
       loadInvoiceNumber();
+
+
 
 
 
@@ -789,19 +1022,26 @@ export default function CreateInvoice() {
       if (shouldPrint) {
 
 
+
         await Swal.fire({
 
+
           title: "Saved!",
+
 
           text:
 
             "Invoice saved successfully",
 
+
           icon: "success",
+
 
           timer: 700,
 
+
           showConfirmButton: false,
+
 
         });
 
@@ -809,15 +1049,19 @@ export default function CreateInvoice() {
 
 
 
+
         router.push(
 
+
           `/software/Invoice/PrintInvoice/${invoiceId}`
+
 
         );
 
 
 
         return;
+
 
 
       }
@@ -829,19 +1073,26 @@ export default function CreateInvoice() {
 
 
 
+
       await Swal.fire({
 
+
         title: "Saved!",
+
 
         text:
 
           "Invoice saved successfully",
 
+
         icon: "success",
+
 
         timer: 1200,
 
+
         showConfirmButton: false,
+
 
       });
 
@@ -849,9 +1100,15 @@ export default function CreateInvoice() {
 
 
 
+
+
+
     }
 
+
+
     catch (error) {
+
 
 
       console.error(
@@ -865,17 +1122,27 @@ export default function CreateInvoice() {
 
 
 
+
       await Swal.fire({
 
+
+
         title: "Error",
+
+
 
         text:
 
           "Failed to save invoice",
 
+
+
         icon: "error",
 
+
+
       });
+
 
 
     }
@@ -887,24 +1154,50 @@ export default function CreateInvoice() {
 
 
 
-
-
-
-
-
-  // ================= UI =================
+  // =========================
+  // CONTINUE PART 4
+  // =========================
+  // =========================
+  // UI
+  // =========================
 
 
   return (
 
-    <main className="min-h-screen bg-slate-50 p-4 text-slate-700">
+    <main
+      className="
+    min-h-screen
+    bg-slate-50
+    p-4
+    text-slate-700
+    "
+    >
 
 
-      <div className="mx-auto max-w-6xl rounded-xl bg-white p-5 shadow-sm">
+
+      <div
+        className="
+      mx-auto
+      max-w-6xl
+      rounded-xl
+      bg-white
+      p-5
+      shadow-sm
+      "
+      >
 
 
 
-        <h1 className="mb-5 text-center text-xl font-semibold text-sky-700">
+
+        <h1
+          className="
+        mb-5
+        text-center
+        text-xl
+        font-semibold
+        text-sky-700
+        "
+        >
 
           Create Invoice
 
@@ -915,19 +1208,42 @@ export default function CreateInvoice() {
 
 
 
+
         <InvoiceHeader
 
-          invoiceNo={invoiceNo}
 
-          date={invoiceDate}
+          invoiceNo={
+            invoiceNo
+          }
 
-          seller={seller}
 
-          invoiceType={invoiceType}
 
-          setInvoiceType={setInvoiceType}
+          date={
+            invoiceDate
+          }
+
+
+
+          seller={
+            seller
+          }
+
+
+
+          invoiceType={
+            invoiceType
+          }
+
+
+
+          setInvoiceType={
+            setInvoiceType
+          }
+
 
         />
+
+
 
 
 
@@ -937,11 +1253,22 @@ export default function CreateInvoice() {
 
         <CustomerSection
 
-          customer={customer}
 
-          setCustomer={setCustomer}
+          customer={
+            customer
+          }
+
+
+
+          setCustomer={
+            setCustomer
+          }
+
+
 
         />
+
+
 
 
 
@@ -951,9 +1278,18 @@ export default function CreateInvoice() {
 
         <MedicineTable
 
-          rows={rows}
 
-          deleteMedicine={deleteMedicine}
+          rows={
+            rows
+          }
+
+
+
+          deleteMedicine={
+            deleteMedicine
+          }
+
+
 
         />
 
@@ -963,19 +1299,46 @@ export default function CreateInvoice() {
 
 
 
-        <div className="grid gap-6 lg:grid-cols-2">
+
+
+        <div
+          className="
+        grid
+        gap-6
+        lg:grid-cols-2
+        "
+        >
+
+
+
+
 
 
 
           <AddMedicine
 
-            item={item}
 
-            updateItem={updateItem}
+            item={
+              item
+            }
 
-            addMedicine={addMedicine}
+
+
+            updateItem={
+              updateItem
+            }
+
+
+
+            addMedicine={
+              addMedicine
+            }
+
+
 
           />
+
+
 
 
 
@@ -985,15 +1348,33 @@ export default function CreateInvoice() {
 
           <CalculationBox
 
-            total={total}
 
-            discount={discount}
+            total={
+              total
+            }
 
-            payable={payable}
 
-            setPayable={setPayable}
+
+            discount={
+              discount
+            }
+
+
+
+            payable={
+              payable
+            }
+
+
+
+            setPayable={
+              setPayable
+            }
+
+
 
           />
+
 
 
 
@@ -1007,13 +1388,26 @@ export default function CreateInvoice() {
 
 
 
+
+
         <InvoiceOptions
 
-          options={options}
 
-          setOptions={setOptions}
+          options={
+            options
+          }
+
+
+
+          setOptions={
+            setOptions
+          }
+
+
 
         />
+
+
 
 
 
@@ -1023,12 +1417,20 @@ export default function CreateInvoice() {
 
         <SaveInvoiceButton
 
-          onClick={saveInvoice}
 
-          disabled={!rows.length}
+          onClick={
+            saveInvoice
+          }
+
+
+
+          disabled={
+            !rows.length
+          }
+
+
 
         />
-
 
 
 
@@ -1038,9 +1440,11 @@ export default function CreateInvoice() {
       </div>
 
 
+
+
     </main>
 
-  );
 
+  );
 
 }

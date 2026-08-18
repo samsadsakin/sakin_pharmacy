@@ -23,7 +23,9 @@ export default function MedicineTable({
 
 
 
+
   const getAmount = (row) => {
+
 
     const qty =
       Number(row.qty || 0);
@@ -46,19 +48,44 @@ export default function MedicineTable({
       )
     );
 
+
   };
+
+
 
 
 
   return (
 
-    <div className="mb-6 overflow-x-auto rounded-xl shadow-sm ring-1 ring-slate-100">
+
+    <div
+      className="
+      mb-5
+      overflow-x-auto
+      rounded-xl
+      bg-white
+      shadow-sm
+      "
+    >
 
 
-      <table className="w-full text-sm">
+
+      <table
+        className="
+        w-full
+        min-w-160
+        text-xs
+        "
+      >
 
 
-        <thead className="bg-sky-50 text-slate-600">
+
+        <thead
+          className="
+          bg-[#123B6D]
+          text-white
+          "
+        >
 
 
           <tr>
@@ -69,9 +96,11 @@ export default function MedicineTable({
             </Th>
 
 
+
             <Th>
               Medicine
             </Th>
+
 
 
             <Th className="text-right">
@@ -79,14 +108,17 @@ export default function MedicineTable({
             </Th>
 
 
+
             <Th className="text-right">
               Rate
             </Th>
 
 
+
             <Th className="text-right">
-              Dis %
+              Dis
             </Th>
+
 
 
             <Th className="text-right">
@@ -94,8 +126,9 @@ export default function MedicineTable({
             </Th>
 
 
+
             <Th className="text-center">
-              Action
+              ✕
             </Th>
 
 
@@ -103,6 +136,9 @@ export default function MedicineTable({
 
 
         </thead>
+
+
+
 
 
 
@@ -120,7 +156,12 @@ export default function MedicineTable({
 
                   colSpan={7}
 
-                  className="py-10 text-center text-slate-400"
+                  className="
+                py-8
+                text-center
+                text-sm
+                text-slate-400
+                "
 
                 >
 
@@ -134,107 +175,195 @@ export default function MedicineTable({
 
             )
 
-            :
 
-            rows.map(
-              (row,index)=>(
+              :
 
 
-                <tr
-
-                  key={row.id}
-
-                  className="border-b border-slate-100 hover:bg-slate-50"
-
-                >
-
-
-                  <Td className="text-center text-slate-400">
-
-                    {index + 1}
-
-                  </Td>
+              rows.map(
+                (row, index) => (
 
 
 
+                  <tr
 
-                  <Td className="font-medium">
+                    key={row.id}
 
-                    {row.medicine}
+                    className="
+                border-b
+                border-slate-100
+                transition
+                hover:bg-slate-50
+                "
 
-                  </Td>
+                  >
 
 
 
 
-                  <Td className="text-right">
 
-                    {row.qty}
+                    <Td className="
+                  text-center
+                  text-slate-400
+                ">
 
-                  </Td>
+                      {index + 1}
 
-
-
-
-                  <Td className="text-right">
-
-                    {money(row.rate)}
-
-                  </Td>
+                    </Td>
 
 
 
 
-                  <Td className="text-right">
-
-                    {row.dis || 0}%
-
-                  </Td>
 
 
 
-
-                  <Td className="text-right font-semibold text-sky-800">
-
-                    {money(
-                      getAmount(row)
-                    )}
-
-                  </Td>
+                    <Td>
 
 
+                      <div
+                        className="
+                                  max-w-xs
+                                   font-medium
+                             text-slate-700
+                                            "
+                        style={{
+                          wordBreak: "break-word",
+                        }}
+                      >
+
+                        {row.medicine || "-"}
+
+                      </div>
 
 
-                  <Td className="text-center">
-
-
-                    <button
-
-                      type="button"
-
-                      onClick={() =>
-                        deleteMedicine(row.id)
-                      }
-
-                      className="rounded px-2 py-1 text-red-500 hover:bg-red-50"
-
-                    >
-
-                      ✕
-
-                    </button>
-
-
-                  </Td>
+                    </Td>
 
 
 
-                </tr>
 
+
+
+
+                    <Td className="
+                  text-right
+                  font-medium
+                ">
+
+                      {row.qty}
+
+                    </Td>
+
+
+
+
+
+
+
+                    <Td className="
+                  text-right
+                ">
+
+
+                      ৳ {money(row.rate)}
+
+
+                    </Td>
+
+
+
+
+
+
+
+
+                    <Td className="
+                  text-right
+                ">
+
+
+                      {row.dis || 0}%
+
+
+                    </Td>
+
+
+
+
+
+
+
+                    <Td className="
+                  text-right
+                  font-bold
+                  text-[#123B6D]
+                ">
+
+
+                      ৳ {money(
+                        getAmount(row)
+                      )}
+
+
+                    </Td>
+
+
+
+
+
+
+
+                    <Td className="
+                  text-center
+                ">
+
+
+
+                      <button
+
+                        type="button"
+
+
+                        onClick={() =>
+                          deleteMedicine(
+                            row.id
+                          )
+                        }
+
+
+
+                        className="
+                    flex
+                    h-7
+                    w-7
+                    items-center
+                    justify-center
+                    rounded-full
+                    text-red-500
+                    transition
+                    hover:bg-red-50
+                    "
+
+                      >
+
+                        ×
+
+                      </button>
+
+
+
+                    </Td>
+
+
+
+
+
+
+                  </tr>
+
+
+
+                )
 
               )
-
-            )
 
           }
 
@@ -243,7 +372,11 @@ export default function MedicineTable({
         </tbody>
 
 
+
+
       </table>
+
+
 
 
     </div>

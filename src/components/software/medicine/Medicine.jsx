@@ -11,7 +11,8 @@ import MedicineSearchBox from "./MedicineSearchBox";
 
 import PendingMedicineUpdates from "./PendingMedicineUpdates";
 
-import UpdateConfirmModal from "./UpdateConfirmModal";
+import EditMedicineUpdate from "./EditMedicineUpdate";
+
 
 
 
@@ -27,6 +28,7 @@ export default function Medicine(){
 
 
 
+
   const [
     loading,
     setLoading
@@ -34,9 +36,19 @@ export default function Medicine(){
 
 
 
+
+
   const [
-    showConfirm,
-    setShowConfirm
+    editMedicine,
+    setEditMedicine
+  ] = useState(null);
+
+
+
+
+  const [
+    editOpen,
+    setEditOpen
   ] = useState(false);
 
 
@@ -44,8 +56,11 @@ export default function Medicine(){
 
 
 
+
+
+
   // =========================
-  // GET PENDING UPDATES
+  // LOAD PENDING UPDATES
   // =========================
 
 
@@ -55,21 +70,26 @@ export default function Medicine(){
     try{
 
 
-      const res =
-        await fetch(
+      const res = await fetch(
 
-          "/api/software/medicine-updates",
+        "/api/software/medicine-updates",
 
-          {
-            cache:"no-store"
-          }
+        {
 
-        );
+          cache:"no-store"
+
+        }
+
+      );
+
+
 
 
 
       const data =
         await res.json();
+
+
 
 
 
@@ -86,6 +106,14 @@ export default function Medicine(){
 
       }
 
+      else{
+
+
+        setPendingMedicines([]);
+
+
+      }
+
 
 
     }
@@ -94,8 +122,11 @@ export default function Medicine(){
 
 
       console.log(
+
         "Pending Load Error",
+
         error
+
       );
 
 
@@ -111,6 +142,7 @@ export default function Medicine(){
 
 
   }
+
 
 
 
@@ -136,7 +168,7 @@ export default function Medicine(){
 
 
   // =========================
-  // ADD PENDING UPDATE
+  // ADD PENDING
   // =========================
 
 
@@ -147,30 +179,37 @@ export default function Medicine(){
     try{
 
 
-      const res =
-        await fetch(
+      const res = await fetch(
 
-          "/api/software/medicine-updates/add",
+        "/api/software/medicine-updates/add",
 
-          {
-
-            method:"POST",
-
-            headers:{
-
-              "Content-Type":
-              "application/json"
-
-            },
+        {
 
 
-            body:
-            JSON.stringify(data)
+          method:"POST",
 
 
-          }
+          headers:{
 
-        );
+
+            "Content-Type":
+
+            "application/json"
+
+
+          },
+
+
+          body:
+
+          JSON.stringify(data)
+
+
+
+        }
+
+      );
+
 
 
 
@@ -183,28 +222,13 @@ export default function Medicine(){
 
 
 
-      if(!result.success){
+      if(result.success){
 
 
-        alert(
+        getPending();
 
-          result.message ||
-
-          "Failed to add"
-
-        );
-
-
-        return;
 
       }
-
-
-
-
-
-      getPending();
-
 
 
 
@@ -214,7 +238,11 @@ export default function Medicine(){
 
 
       console.log(
+
+        "Add Pending Error",
+
         error
+
       );
 
 
@@ -232,22 +260,25 @@ export default function Medicine(){
 
 
   // =========================
-  // REMOVE FROM UI AFTER DELETE
+  // REMOVE AFTER DELETE
   // =========================
 
 
   function removePending(item){
 
 
-
     setPendingMedicines(prev =>
+
 
       prev.filter(
 
-        x =>
-        x._id !== item._id
+        medicine =>
+
+        medicine._id !== item._id
+
 
       )
+
 
     );
 
@@ -263,17 +294,19 @@ export default function Medicine(){
 
 
   // =========================
-  // EDIT FUTURE
+  // OPEN EDIT
   // =========================
 
 
   function editPending(item){
 
 
-    console.log(
-      "Edit Pending",
-      item
-    );
+
+    setEditMedicine(item);
+
+
+    setEditOpen(true);
+
 
 
   }
@@ -287,105 +320,21 @@ export default function Medicine(){
 
 
   // =========================
-  // OPEN CONFIRM MODAL
+  // CLOSE EDIT
   // =========================
 
 
-  function updateAll(){
+  function closeEdit(){
 
 
-    if(
-      pendingMedicines.length === 0
-    ){
-
-      return;
-
-    }
+    setEditOpen(false);
 
 
+    setEditMedicine(null);
 
-    setShowConfirm(true);
 
 
   }
-
-
-
-
-
-
-
-
-
-  // =========================
-  // CONFIRM UPDATE
-  // =========================
-
-
-  async function confirmUpdate(){
-
-
-    try{
-
-
-      const res =
-        await fetch(
-
-          "/api/software/medicine-updates/update-all",
-
-          {
-
-            method:"POST"
-
-          }
-
-        );
-
-
-
-
-
-      const data =
-        await res.json();
-
-
-
-
-
-      alert(
-
-        data.message
-
-      );
-
-
-
-
-
-      setShowConfirm(false);
-
-
-
-      getPending();
-
-
-
-
-    }
-
-    catch(error){
-
-
-      console.log(
-        error
-      );
-
-
-    }
-
-
-  }
-
 
 
 
@@ -397,24 +346,31 @@ export default function Medicine(){
 
   return (
 
-    <div
+
+    <main
+
       className="
       min-h-screen
       bg-slate-50
       p-4
       sm:p-6
       "
+
     >
 
 
 
       <div
+
         className="
         mx-auto
         max-w-5xl
         space-y-6
         "
+
       >
+
+
 
 
 
@@ -422,26 +378,34 @@ export default function Medicine(){
         {/* HEADER */}
 
 
-        <div
+
+        <section
+
           className="
           rounded-2xl
           bg-white
           p-6
           shadow-sm
           "
+
         >
 
 
+
           <div
+
             className="
             flex
             items-center
             gap-3
             "
+
           >
 
 
+
             <div
+
               className="
               flex
               h-12
@@ -453,6 +417,7 @@ export default function Medicine(){
               text-xl
               text-white
               "
+
             >
 
               💊
@@ -462,15 +427,18 @@ export default function Medicine(){
 
 
 
+
             <div>
 
 
               <h1
+
                 className="
                 text-2xl
                 font-bold
                 text-[#123B6D]
                 "
+
               >
 
                 Medicine Management
@@ -479,15 +447,18 @@ export default function Medicine(){
 
 
 
+
               <p
+
                 className="
                 mt-1
                 text-sm
                 text-slate-500
                 "
+
               >
 
-                Add medicines and review price updates
+                Manage medicines and review updates
 
               </p>
 
@@ -500,7 +471,8 @@ export default function Medicine(){
           </div>
 
 
-        </div>
+
+        </section>
 
 
 
@@ -510,31 +482,36 @@ export default function Medicine(){
 
 
 
-        {/* ADD / SEARCH */}
+        {/* SEARCH BOX */}
 
 
-        <div
+
+        <section
+
           className="
           rounded-2xl
           bg-white
           p-5
           shadow-sm
           "
+
         >
 
 
 
           <MedicineSearchBox
 
+
             onAddPending={
               addPending
             }
+
 
           />
 
 
 
-        </div>
+        </section>
 
 
 
@@ -544,7 +521,7 @@ export default function Medicine(){
 
 
 
-        {/* PENDING */}
+        {/* PENDING LIST */}
 
 
 
@@ -570,7 +547,7 @@ export default function Medicine(){
 
 
           onUpdateAll={
-            updateAll
+            getPending
           }
 
 
@@ -585,36 +562,33 @@ export default function Medicine(){
 
 
 
-        {/* CONFIRM MODAL */}
+        {/* EDIT MODAL */}
 
 
-        <UpdateConfirmModal
+
+        <EditMedicineUpdate
+
+
+          medicine={
+            editMedicine
+          }
+
 
 
           open={
-            showConfirm
+            editOpen
           }
 
 
 
-          medicines={
-            pendingMedicines
+          onClose={
+            closeEdit
           }
 
 
 
-          onClose={()=>
-
-
-            setShowConfirm(false)
-
-
-          }
-
-
-
-          onConfirm={
-            confirmUpdate
+          onUpdated={
+            getPending
           }
 
 
@@ -629,8 +603,12 @@ export default function Medicine(){
 
 
 
-    </div>
+
+
+    </main>
+
 
   );
+
 
 }

@@ -1,389 +1,334 @@
+import { cookies } from "next/headers";
+
 import connectDB from "@/lib/mongodb";
 
 import Medicine from "@/models/medicine";
 
 import MedicineUpdate from "@/models/medicineUpdate";
 
-import { cookies } from "next/headers";
+import User from "@/models/user";
 
 import {
   verifySessionToken,
 } from "@/lib/auth";
 
-import User from "@/models/user";
 
-
-export const runtime = "nodejs";
-
-
+export const runtime="nodejs";
 
 
 
 export async function POST(){
 
 
-  try{
+try{
 
 
-    // =========================
-    // SESSION CHECK
-    // =========================
+await connectDB();
 
 
-    const cookieStore =
-      await cookies();
 
+// =========================
+// SESSION
+// =========================
 
-    const token =
-      cookieStore.get(
-        "customer_session"
-      )?.value;
 
+const cookieStore =
+await cookies();
 
 
-    if(!token){
+const token =
+cookieStore.get(
+"customer_session"
+)?.value;
 
 
-      return Response.json(
 
-        {
-          success:false,
-          message:"Not logged in"
-        },
+if(!token){
 
-        {
-          status:401
-        }
+return Response.json({
 
-      );
+success:false,
 
+message:"Not logged in"
 
-    }
+},
+{
+status:401
+});
 
+}
 
 
 
+const session =
+await verifySessionToken(token);
 
 
-    const session =
-      await verifySessionToken(
-        token
-      );
 
+if(!session?.userId){
 
+return Response.json({
 
+success:false,
 
+message:"Invalid session"
 
-    await connectDB();
+},
+{
+status:401
+});
 
+}
 
 
 
 
 
-    const user =
-      await User.findById(
-        session.userId
-      )
-      .select(
-        "name mobile role"
-      )
-      .lean();
+const user =
+await User.findById(
+session.userId
+)
+.select(
+"name mobile"
+)
+.lean();
 
 
 
 
+if(!user){
 
+return Response.json({
 
+success:false,
 
-    // =========================
-    // GET PENDING LIST
-    // =========================
+message:"User not found"
 
+},
+{
+status:401
+});
 
-    let filter = {};
+}
 
 
 
-    // Admin সব approve করতে পারবে
 
-    if(
-      user.role === "admin"
-    ){
 
 
-      filter={
-        status:"pending"
-      };
+// =========================
+// GET PENDING
+// =========================
 
 
-    }
+const updates =
+await MedicineUpdate.find({
 
+status:"pending"
 
-    else{
+});
 
 
-      filter={
 
-        status:"pending",
 
-        "createdBy.mobile":
-          user.mobile
 
-      };
+let updatedCount = 0;
 
 
-    }
 
 
 
 
+// =========================
+// PROCESS UPDATE
+// =========================
 
 
+for(const update of updates){
 
 
-    const updates =
-      await MedicineUpdate.find(
-        filter
-      );
 
+// =========================
+// PRICE UPDATE
+// =========================
 
 
+if(
+update.type==="price_update"
+){
 
 
 
+await Medicine.findByIdAndUpdate(
 
-    if(
-      updates.length === 0
-    ){
+update.medicineId,
 
+{
 
-      return Response.json({
 
-        success:false,
+salePrice:
+update.newPrice,
 
-        message:
-        "No pending update found"
 
-      });
+updatedBy:{
 
+name:
+user.name,
 
-    }
 
+mobile:
+user.mobile
 
+}
 
+}
 
+);
 
 
 
+}
 
-    // =========================
-    // PROCESS UPDATE
-    // =========================
 
 
-    for(
-      const item of updates
-    ){
 
 
 
-      // =====================
-      // PRICE UPDATE
-      // =====================
 
+// =========================
+// NEW MEDICINE
+// =========================
 
-      if(
-        item.type ===
-        "price_update"
-      ){
 
+if(
+update.type==="new_medicine"
+){
 
 
-        await Medicine.updateOne(
 
-          {
-            _id:
-            item.medicineId
-          },
+await Medicine.create({
 
+name:
+update.medicineName,
 
-          {
 
-            $set:{
+searchName:
+update.medicineName
+.toLowerCase(),
 
 
-              salePrice:
-              item.newPrice,
+salePrice:
+update.newPrice,
 
 
-              updatedBy:{
+isActive:true,
 
-                name:
-                user.name,
 
+createdBy:{
 
-                mobile:
-                user.mobile
+name:
+user.name,
 
-              }
 
+mobile:
+user.mobile
 
-            }
+},
 
-          }
 
+updatedBy:{
 
-        );
+name:
+user.name,
 
 
-      }
+mobile:
+user.mobile
 
+}
 
 
 
+});
 
 
+}
 
 
-      // =====================
-      // NEW MEDICINE
-      // =====================
 
 
-      if(
-        item.type ===
-        "new_medicine"
-      ){
 
 
 
-        await Medicine.create({
+// =========================
+// APPROVE UPDATE
+// =========================
 
-          name:
-          item.medicineName,
 
+await MedicineUpdate.findByIdAndUpdate(
 
-          searchName:
-          item.medicineName
-          .toLowerCase()
-          .trim(),
+update._id,
 
+{
 
+status:"approved"
 
-          salePrice:
-          item.newPrice,
+}
 
+);
 
 
-          isActive:true,
 
+updatedCount++;
 
 
-          createdBy:
-          item.createdBy,
 
+}
 
 
-          updatedBy:{
 
-            name:
-            user.name,
 
-            mobile:
-            user.mobile
 
-          }
 
 
+return Response.json({
 
-        });
+success:true,
 
+message:
+`${updatedCount} medicine updated successfully`
 
+});
 
-      }
 
 
 
 
+}
+catch(error){
 
 
-      // =====================
-      // REMOVE AFTER UPDATE
-      // =====================
+console.error(
+"Update All Error:",
+error
+);
 
 
-      await MedicineUpdate.deleteOne({
+return Response.json({
 
-        _id:
-        item._id
+success:false,
 
-      });
+message:
+error.message ||
+"Update failed"
 
+},
+{
+status:500
+});
 
 
-    }
-
-
-
-
-
-
-
-
-    return Response.json({
-
-      success:true,
-
-      message:
-      "Medicine updated successfully",
-
-      updatedCount:
-      updates.length
-
-    });
-
-
-
-
-
-
-
-  }
-
-
-  catch(error){
-
-
-
-    console.error(
-      "Update All Medicine Error:",
-      error
-    );
-
-
-
-    return Response.json(
-
-      {
-
-        success:false,
-
-        message:
-        "Server error"
-
-      },
-
-      {
-
-        status:500
-
-      }
-
-    );
-
-
-  }
+}
 
 
 }
