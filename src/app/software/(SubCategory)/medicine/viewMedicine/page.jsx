@@ -7,75 +7,89 @@ import {
 
 import {
   FaEye,
-  FaTimes,
   FaSearch,
+  FaTimes,
 } from "react-icons/fa";
 
 
-const MEDICINES_PER_PAGE = 100;
+const MEDICINES_PER_PAGE = 50;
 
 
 export default function ViewMedicinePage() {
 
   // =========================
-  // DATA
+  // MEDICINES
   // =========================
 
-  const [medicines, setMedicines] =
-    useState([]);
+  const [
+    medicines,
+    setMedicines,
+  ] = useState([]);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
 
-  const [error, setError] =
-    useState("");
+  const [
+    error,
+    setError,
+  ] = useState("");
 
 
   // =========================
   // VIEW
   // =========================
 
-  const [selected, setSelected] =
-    useState(null);
+  const [
+    selected,
+    setSelected,
+  ] = useState(null);
 
 
   // =========================
   // DELETE
   // =========================
 
-  const [deletingId, setDeletingId] =
-    useState(null);
+  const [
+    deletingId,
+    setDeletingId,
+  ] = useState(null);
 
 
   // =========================
   // SEARCH
   // =========================
 
-  const [search, setSearch] =
-    useState("");
+  const [
+    search,
+    setSearch,
+  ] = useState("");
 
-  const [debouncedSearch, setDebouncedSearch] =
-    useState("");
-
-  const [suggestions, setSuggestions] =
-    useState([]);
-
-  const [showSuggestions, setShowSuggestions] =
-    useState(false);
+  const [
+    debouncedSearch,
+    setDebouncedSearch,
+  ] = useState("");
 
 
   // =========================
   // PAGINATION
   // =========================
 
-  const [currentPage, setCurrentPage] =
-    useState(1);
+  const [
+    currentPage,
+    setCurrentPage,
+  ] = useState(1);
 
-  const [totalPages, setTotalPages] =
-    useState(1);
+  const [
+    totalPages,
+    setTotalPages,
+  ] = useState(1);
 
-  const [totalMedicines, setTotalMedicines] =
-    useState(0);
+  const [
+    totalMedicines,
+    setTotalMedicines,
+  ] = useState(0);
 
 
   // =========================
@@ -92,90 +106,6 @@ export default function ViewMedicinePage() {
         );
 
       }, 300);
-
-
-    return () =>
-      clearTimeout(timer);
-
-  }, [search]);
-
-
-  // =========================
-  // GET SUGGESTIONS
-  // =========================
-
-  useEffect(() => {
-
-    const getSuggestions =
-      async () => {
-
-        if (
-          !search.trim()
-        ) {
-
-          setSuggestions([]);
-
-          setShowSuggestions(false);
-
-          return;
-
-        }
-
-
-        try {
-
-          const res =
-            await fetch(
-              `/api/software/medicines/search?q=${encodeURIComponent(
-                search
-              )}`,
-              {
-                cache: "no-store",
-              }
-            );
-
-
-          const data =
-            await res.json();
-
-
-          if (
-            res.ok &&
-            data.success
-          ) {
-
-            setSuggestions(
-              data.medicines || []
-            );
-
-            setShowSuggestions(true);
-
-          } else {
-
-            setSuggestions([]);
-
-          }
-
-        }
-        catch (error) {
-
-          console.error(
-            "Medicine Suggestion Error:",
-            error
-          );
-
-          setSuggestions([]);
-
-        }
-
-      };
-
-
-    const timer =
-      setTimeout(
-        getSuggestions,
-        250
-      );
 
 
     return () =>
@@ -228,7 +158,7 @@ export default function ViewMedicinePage() {
 
         const res =
           await fetch(
-            `/api/software/medicines/view?${params}`,
+            `/api/software/medicines/view?${params.toString()}`,
             {
               cache: "no-store",
             }
@@ -287,7 +217,7 @@ export default function ViewMedicinePage() {
 
 
   // =========================
-  // FETCH WHEN PAGE / SEARCH CHANGES
+  // LOAD
   // =========================
 
   useEffect(() => {
@@ -307,36 +237,11 @@ export default function ViewMedicinePage() {
   const handleSearchChange =
     (e) => {
 
-      const value =
-        e.target.value;
-
-      setSearch(value);
-
-      setCurrentPage(1);
-
-    };
-
-
-  // =========================
-  // SELECT SUGGESTION
-  // =========================
-
-  const handleSuggestionSelect =
-    (medicine) => {
-
       setSearch(
-        medicine.name
-      );
-
-      setDebouncedSearch(
-        medicine.name
+        e.target.value
       );
 
       setCurrentPage(1);
-
-      setSuggestions([]);
-
-      setShowSuggestions(false);
 
     };
 
@@ -350,10 +255,6 @@ export default function ViewMedicinePage() {
     setSearch("");
 
     setDebouncedSearch("");
-
-    setSuggestions([]);
-
-    setShowSuggestions(false);
 
     setCurrentPage(1);
 
@@ -370,6 +271,7 @@ export default function ViewMedicinePage() {
       setSelected(
         medicine
       );
+
 
       document
         .getElementById(
@@ -388,9 +290,9 @@ export default function ViewMedicinePage() {
   const handleDelete =
     async (medicine) => {
 
-      if (
-        deletingId
-      ) return;
+      if (deletingId) {
+        return;
+      }
 
 
       try {
@@ -425,8 +327,22 @@ export default function ViewMedicinePage() {
         }
 
 
-        // Reload current page
-        await getMedicines();
+        if (
+          medicines.length === 1 &&
+          currentPage > 1
+        ) {
+
+          setCurrentPage(
+            (prev) =>
+              prev - 1
+          );
+
+        }
+        else {
+
+          await getMedicines();
+
+        }
 
       }
       catch (error) {
@@ -452,7 +368,7 @@ export default function ViewMedicinePage() {
 
   const showingFrom =
 
-    totalMedicines
+    totalMedicines > 0
 
       ? (
           currentPage - 1
@@ -481,23 +397,26 @@ export default function ViewMedicinePage() {
 
 
       {/* =========================
-          TITLE
+          HEADER
       ========================= */}
 
-      <h1 className="mb-5 text-center text-xl font-semibold text-sky-700">
-
-        View Medicine
-
-      </h1>
+      <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
 
-      {/* =========================
-          SEARCH
-      ========================= */}
+        <h1 className="text-xl font-semibold text-sky-700">
 
-      <div className="relative mx-auto mb-5 max-w-xl">
+          View Medicine
 
-        <div className="flex items-center rounded-lg border border-slate-200 bg-white">
+        </h1>
+
+
+        {/* =========================
+            SEARCH ONLY
+            NO DROPDOWN
+        ========================= */}
+
+        <div className="flex w-full items-center rounded-lg border border-slate-200 bg-white sm:w-80">
+
 
           <FaSearch className="ml-3 text-sm text-slate-400" />
 
@@ -505,21 +424,12 @@ export default function ViewMedicinePage() {
           <input
             type="text"
             value={search}
-            onChange={handleSearchChange}
-            onFocus={() => {
-
-              if (
-                suggestions.length
-              ) {
-
-                setShowSuggestions(true);
-
-              }
-
-            }}
-            placeholder="Search medicine name..."
+            onChange={
+              handleSearchChange
+            }
+            placeholder="Search medicine..."
             autoComplete="off"
-            className="h-11 w-full bg-transparent px-3 text-sm outline-none"
+            className="h-10 w-full bg-transparent px-3 text-sm outline-none"
           />
 
 
@@ -527,7 +437,9 @@ export default function ViewMedicinePage() {
 
             <button
               type="button"
-              onClick={clearSearch}
+              onClick={
+                clearSearch
+              }
               className="mr-2 flex size-8 cursor-pointer items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-red-500"
             >
 
@@ -537,62 +449,19 @@ export default function ViewMedicinePage() {
 
           )}
 
+
         </div>
 
-
-        {/* =========================
-            SUGGESTIONS
-        ========================= */}
-
-        {showSuggestions &&
-          suggestions.length > 0 && (
-
-          <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-72 overflow-y-auto rounded-lg border border-slate-100 bg-white p-1 shadow-lg">
-
-            {suggestions.map(
-              (medicine) => (
-
-                <button
-                  key={medicine._id}
-                  type="button"
-                  onClick={() =>
-                    handleSuggestionSelect(
-                      medicine
-                    )
-                  }
-                  className="flex w-full cursor-pointer items-center justify-between gap-4 rounded-lg px-3 py-2.5 text-left hover:bg-blue-50"
-                >
-
-                  <span className="text-sm font-medium text-slate-700">
-
-                    {medicine.name}
-
-                  </span>
-
-
-                  <span className="shrink-0 text-sm font-semibold text-emerald-700">
-
-                    ৳{medicine.salePrice}
-
-                  </span>
-
-                </button>
-
-              )
-            )}
-
-          </div>
-
-        )}
 
       </div>
 
 
       {/* =========================
-          RESULT INFO
+          RESULT COUNT
       ========================= */}
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
+
 
         <span>
 
@@ -617,21 +486,20 @@ export default function ViewMedicinePage() {
         </span>
 
 
-        <span>
+        {debouncedSearch && (
 
-          Page{" "}
+          <span>
 
-          <strong>
-            {currentPage}
-          </strong>
+            Search:{" "}
 
-          {" / "}
+            <strong className="text-blue-600">
+              {debouncedSearch}
+            </strong>
 
-          <strong>
-            {totalPages}
-          </strong>
+          </span>
 
-        </span>
+        )}
+
 
       </div>
 
@@ -642,29 +510,45 @@ export default function ViewMedicinePage() {
 
       <div className="overflow-hidden rounded-xl border border-slate-100">
 
+
         <div className="overflow-x-auto">
 
+
           <table className="table">
+
 
             <thead>
 
               <tr className="bg-slate-50 text-slate-600">
 
+
                 <th className="w-16">
+
                   SL
+
                 </th>
 
+
                 <th>
+
                   Name
+
                 </th>
 
+
                 <th>
+
                   Price
+
                 </th>
+
 
                 <th className="text-center">
+
                   Action
+
                 </th>
+
 
               </tr>
 
@@ -672,6 +556,7 @@ export default function ViewMedicinePage() {
 
 
             <tbody>
+
 
               {loading ? (
 
@@ -727,9 +612,14 @@ export default function ViewMedicinePage() {
                   ) => (
 
                     <tr
-                      key={medicine._id}
+                      key={
+                        medicine._id
+                      }
                       className="hover:bg-slate-50"
                     >
+
+
+                      {/* SL */}
 
                       <td className="text-slate-400">
 
@@ -747,19 +637,30 @@ export default function ViewMedicinePage() {
                       </td>
 
 
+                      {/* NAME */}
+
                       <td className="font-medium text-slate-700">
 
-                        {medicine.name}
+                        {
+                          medicine.name
+                        }
 
                       </td>
 
+
+                      {/* PRICE */}
 
                       <td className="font-semibold text-emerald-700">
 
-                        ৳{medicine.salePrice}
+                        ৳
+                        {
+                          medicine.salePrice
+                        }
 
                       </td>
 
+
+                      {/* ACTION */}
 
                       <td>
 
@@ -781,7 +682,9 @@ export default function ViewMedicinePage() {
                             <FaEye />
 
                             <span className="hidden sm:inline">
+
                               View
+
                             </span>
 
                           </button>
@@ -791,16 +694,17 @@ export default function ViewMedicinePage() {
 
                           <button
                             type="button"
-                            disabled={
-                              deletingId ===
-                              medicine._id
-                            }
                             onClick={() =>
                               handleDelete(
                                 medicine
                               )
                             }
+                            disabled={
+                              deletingId ===
+                              medicine._id
+                            }
                             className="btn btn-square btn-sm cursor-pointer border-0 bg-red-50 text-red-600 hover:bg-red-100 disabled:cursor-wait"
+                            title="Delete"
                           >
 
                             {deletingId ===
@@ -816,9 +720,11 @@ export default function ViewMedicinePage() {
 
                           </button>
 
+
                         </div>
 
                       </td>
+
 
                     </tr>
 
@@ -827,11 +733,15 @@ export default function ViewMedicinePage() {
 
               )}
 
+
             </tbody>
+
 
           </table>
 
+
         </div>
+
 
       </div>
 
@@ -842,7 +752,8 @@ export default function ViewMedicinePage() {
 
       {totalPages > 1 && (
 
-        <div className="mt-5 flex items-center justify-center gap-2">
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+
 
           <button
             type="button"
@@ -865,11 +776,17 @@ export default function ViewMedicinePage() {
 
           <span className="px-3 text-sm text-slate-500">
 
-            {currentPage}
+            Page{" "}
 
-            {" / "}
+            <strong>
+              {currentPage}
+            </strong>
 
-            {totalPages}
+            {" of "}
+
+            <strong>
+              {totalPages}
+            </strong>
 
           </span>
 
@@ -893,6 +810,7 @@ export default function ViewMedicinePage() {
 
           </button>
 
+
         </div>
 
       )}
@@ -907,7 +825,11 @@ export default function ViewMedicinePage() {
         className="modal"
       >
 
+
         <div className="modal-box">
+
+
+          {/* CLOSE */}
 
           <form method="dialog">
 
@@ -934,15 +856,22 @@ export default function ViewMedicinePage() {
 
             <div className="space-y-3">
 
+
               <DetailRow
                 label="ID"
-                value={selected._id}
+                value={
+                  selected._id
+                }
               />
+
 
               <DetailRow
                 label="Name"
-                value={selected.name}
+                value={
+                  selected.name
+                }
               />
+
 
               <DetailRow
                 label="Search Name"
@@ -951,10 +880,12 @@ export default function ViewMedicinePage() {
                 }
               />
 
+
               <DetailRow
                 label="Sale Price"
                 value={`৳${selected.salePrice}`}
               />
+
 
               <DetailRow
                 label="Status"
@@ -965,37 +896,73 @@ export default function ViewMedicinePage() {
                 }
               />
 
+
+              <div className="divider my-2" />
+
+
+              <p className="text-xs font-semibold uppercase text-slate-400">
+
+                Created By
+
+              </p>
+
+
               <DetailRow
-                label="Created By"
+                label="Name"
                 value={
-                  selected.createdBy?.name ||
+                  selected
+                    .createdBy
+                    ?.name ||
                   "-"
                 }
               />
 
+
               <DetailRow
-                label="Created Mobile"
+                label="Mobile"
                 value={
-                  selected.createdBy?.mobile ||
+                  selected
+                    .createdBy
+                    ?.mobile ||
                   "-"
                 }
               />
 
+
+              <div className="divider my-2" />
+
+
+              <p className="text-xs font-semibold uppercase text-slate-400">
+
+                Updated By
+
+              </p>
+
+
               <DetailRow
-                label="Updated By"
+                label="Name"
                 value={
-                  selected.updatedBy?.name ||
+                  selected
+                    .updatedBy
+                    ?.name ||
                   "-"
                 }
               />
 
+
               <DetailRow
-                label="Updated Mobile"
+                label="Mobile"
                 value={
-                  selected.updatedBy?.mobile ||
+                  selected
+                    .updatedBy
+                    ?.mobile ||
                   "-"
                 }
               />
+
+
+              <div className="divider my-2" />
+
 
               <DetailRow
                 label="Created At"
@@ -1006,6 +973,7 @@ export default function ViewMedicinePage() {
                 }
               />
 
+
               <DetailRow
                 label="Updated At"
                 value={
@@ -1015,12 +983,16 @@ export default function ViewMedicinePage() {
                 }
               />
 
+
             </div>
 
           )}
 
+
         </div>
 
+
+        {/* BACKDROP */}
 
         <form
           method="dialog"
@@ -1033,7 +1005,9 @@ export default function ViewMedicinePage() {
 
         </form>
 
+
       </dialog>
+
 
     </div>
 
@@ -1056,17 +1030,20 @@ function DetailRow({
 
     <div className="flex items-start justify-between gap-4 rounded-lg bg-slate-50 px-4 py-3">
 
+
       <span className="text-sm text-slate-500">
 
         {label}
 
       </span>
 
+
       <span className="break-all text-right text-sm font-medium text-slate-700">
 
         {value ?? "-"}
 
       </span>
+
 
     </div>
 
@@ -1083,8 +1060,11 @@ function DetailRow({
 function formatDate(date) {
 
   if (!date) {
+
     return "-";
+
   }
+
 
   return new Date(
     date

@@ -12,6 +12,7 @@ import {
   FaChartBar,
   FaCog,
   FaCapsules,
+  FaBriefcaseMedical,
   FaUsers,
 } from "react-icons/fa";
 
@@ -29,6 +30,11 @@ const menuItems = [
     name: "Create Invoice",
     href: "/software/Invoice",
     icon: FaCartPlus,
+  },
+  {
+    name: "Medicine",
+    href: "/software/medicine",
+    icon: FaBriefcaseMedical,
   },
 
   {
@@ -281,11 +287,11 @@ const Sidebar = ({ children }) => {
 
             <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-white text-blue-600">
               <Link href="/software">
-              
-               <FaCapsules className="text-lg" />
+
+                <FaCapsules className="text-lg" />
               </Link>
 
-             
+
 
             </div>
 
