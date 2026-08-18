@@ -5,197 +5,192 @@ import {
   useState,
 } from "react";
 
+import Swal from "sweetalert2";
+
 import {
-  FaEye,
-  FaTimes,
-  FaSearch,
-} from "react-icons/fa";
+  InvoiceFilter,
+  InvoiceTable,
+  InvoicePagination,
+  InvoiceModal,
+} from "@/components/software/invoice/view";
 
 
-const MEDICINES_PER_PAGE = 100;
+const INVOICES_PER_PAGE = 50;
 
 
-export default function ViewMedicinePage() {
+// =========================
+// TODAY DATE
+// =========================
+
+function getTodayDate() {
+
+  const date =
+    new Date();
+
+  return (
+    date.getFullYear()
+    +
+    "-"
+    +
+    String(
+      date.getMonth() + 1
+    ).padStart(2, "0")
+    +
+    "-"
+    +
+    String(
+      date.getDate()
+    ).padStart(2, "0")
+  );
+
+}
+
+
+export default function ViewInvoicePage() {
+
 
   // =========================
-  // DATA
+  // INVOICES
   // =========================
 
-  const [medicines, setMedicines] =
-    useState([]);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
+  const [
+    invoices,
+    setInvoices,
+  ] = useState([]);
 
 
-  // =========================
-  // VIEW
-  // =========================
-
-  const [selected, setSelected] =
-    useState(null);
+  const [
+    selected,
+    setSelected,
+  ] = useState(null);
 
 
-  // =========================
-  // DELETE
-  // =========================
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
 
-  const [deletingId, setDeletingId] =
-    useState(null);
+
+  const [
+    error,
+    setError,
+  ] = useState("");
 
 
   // =========================
-  // SEARCH
+  // FILTER
   // =========================
 
-  const [search, setSearch] =
-    useState("");
+  const [
+    fromDate,
+    setFromDate,
+  ] = useState("");
 
-  const [debouncedSearch, setDebouncedSearch] =
-    useState("");
 
-  const [suggestions, setSuggestions] =
-    useState([]);
+  const [
+    toDate,
+    setToDate,
+  ] = useState("");
 
-  const [showSuggestions, setShowSuggestions] =
-    useState(false);
+
+  const [
+    invoiceSearch,
+    setInvoiceSearch,
+  ] = useState("");
 
 
   // =========================
   // PAGINATION
   // =========================
 
-  const [currentPage, setCurrentPage] =
-    useState(1);
-
-  const [totalPages, setTotalPages] =
-    useState(1);
-
-  const [totalMedicines, setTotalMedicines] =
-    useState(0);
+  const [
+    currentPage,
+    setCurrentPage,
+  ] = useState(1);
 
 
-  // =========================
-  // SEARCH DEBOUNCE
-  // =========================
-
-  useEffect(() => {
-
-    const timer =
-      setTimeout(() => {
-
-        setDebouncedSearch(
-          search.trim()
-        );
-
-      }, 300);
+  const [
+    totalPages,
+    setTotalPages,
+  ] = useState(1);
 
 
-    return () =>
-      clearTimeout(timer);
-
-  }, [search]);
+  const [
+    totalInvoices,
+    setTotalInvoices,
+  ] = useState(0);
 
 
   // =========================
-  // GET SUGGESTIONS
+  // USER
   // =========================
 
-  useEffect(() => {
-
-    const getSuggestions =
-      async () => {
-
-        if (
-          !search.trim()
-        ) {
-
-          setSuggestions([]);
-
-          setShowSuggestions(false);
-
-          return;
-
-        }
+  const [
+    user,
+    setUser,
+  ] = useState(null);
 
 
-        try {
+  // =========================
+  // GET USER
+  // =========================
 
-          const res =
-            await fetch(
-              `/api/software/medicines/search?q=${encodeURIComponent(
-                search
-              )}`,
-              {
-                cache: "no-store",
-              }
-            );
+  const getUser =
+    async () => {
 
+      try {
 
-          const data =
-            await res.json();
-
-
-          if (
-            res.ok &&
-            data.success
-          ) {
-
-            setSuggestions(
-              data.medicines || []
-            );
-
-            setShowSuggestions(true);
-
-          } else {
-
-            setSuggestions([]);
-
-          }
-
-        }
-        catch (error) {
-
-          console.error(
-            "Medicine Suggestion Error:",
-            error
+        const res =
+          await fetch(
+            "/api/auth/me",
+            {
+              cache: "no-store",
+            }
           );
 
-          setSuggestions([]);
+
+        const data =
+          await res.json();
+
+
+        if (data.success) {
+
+          setUser(
+            data.user
+          );
 
         }
 
-      };
+      }
+      catch (error) {
+
+        console.log(
+          "User Load Error",
+          error
+        );
+
+      }
+
+    };
 
 
-    const timer =
-      setTimeout(
-        getSuggestions,
-        250
-      );
+  useEffect(() => {
 
+    getUser();
 
-    return () =>
-      clearTimeout(timer);
-
-  }, [search]);
+  }, []);
 
 
   // =========================
-  // GET MEDICINES
+  // GET INVOICES
   // =========================
 
-  const getMedicines =
+  const getInvoices =
     async () => {
 
       try {
 
         setLoading(true);
-
-        setError("");
 
 
         const params =
@@ -210,25 +205,68 @@ export default function ViewMedicinePage() {
 
         params.set(
           "limit",
-          MEDICINES_PER_PAGE
+          INVOICES_PER_PAGE
         );
 
 
+        // =========================
+        // SALESMAN FILTER
+        // =========================
+
         if (
-          debouncedSearch
+          user?.role ===
+          "salesman"
         ) {
 
           params.set(
-            "q",
-            debouncedSearch
+            "sellerNumber",
+            user.mobile
           );
+
+        }
+
+
+        // =========================
+        // INVOICE SEARCH
+        // =========================
+
+        if (
+          invoiceSearch
+        ) {
+
+          params.set(
+            "invoiceNo",
+            invoiceSearch
+          );
+
+        }
+        else {
+
+          if (fromDate) {
+
+            params.set(
+              "from",
+              fromDate
+            );
+
+          }
+
+
+          if (toDate) {
+
+            params.set(
+              "to",
+              toDate
+            );
+
+          }
 
         }
 
 
         const res =
           await fetch(
-            `/api/software/medicines/view?${params}`,
+            `/api/software/invoices/view?${params}`,
             {
               cache: "no-store",
             }
@@ -242,19 +280,18 @@ export default function ViewMedicinePage() {
         if (!res.ok) {
 
           throw new Error(
-            data.message ||
-            "Failed to load medicines"
+            data.message
           );
 
         }
 
 
-        setMedicines(
-          data.medicines || []
+        setInvoices(
+          data.invoices || []
         );
 
 
-        setTotalMedicines(
+        setTotalInvoices(
           data.pagination?.total || 0
         );
 
@@ -264,19 +301,18 @@ export default function ViewMedicinePage() {
         );
 
       }
-      catch (error) {
 
-        console.error(
-          "Medicine Load Error:",
-          error
-        );
+      catch (err) {
+
+        console.error(err);
 
 
         setError(
-          "Failed to load medicines"
+          "Failed to load invoices"
         );
 
       }
+
       finally {
 
         setLoading(false);
@@ -286,78 +322,69 @@ export default function ViewMedicinePage() {
     };
 
 
-  // =========================
-  // FETCH WHEN PAGE / SEARCH CHANGES
-  // =========================
-
   useEffect(() => {
 
-    getMedicines();
+    if (
+      user !== null
+    ) {
+
+      getInvoices();
+
+    }
 
   }, [
     currentPage,
-    debouncedSearch,
+    fromDate,
+    toDate,
+    invoiceSearch,
+    user,
   ]);
 
 
   // =========================
-  // SEARCH CHANGE
+  // DELETE
   // =========================
 
-  const handleSearchChange =
-    (e) => {
-
-      const value =
-        e.target.value;
-
-      setSearch(value);
-
-      setCurrentPage(1);
-
-    };
+  const handleDelete =
+    async (invoice) => {
 
 
-  // =========================
-  // SELECT SUGGESTION
-  // =========================
+      const result =
+        await Swal.fire({
 
-  const handleSuggestionSelect =
-    (medicine) => {
+          title:
+            "Delete Invoice?",
 
-      setSearch(
-        medicine.name
+          icon:
+            "warning",
+
+          showCancelButton:
+            true,
+
+          confirmButtonText:
+            "Delete",
+
+        });
+
+
+      if (
+        !result.isConfirmed
+      ) {
+        return;
+      }
+
+
+      await fetch(
+        `/api/software/invoices/${invoice._id}`,
+        {
+          method: "DELETE",
+        }
       );
 
-      setDebouncedSearch(
-        medicine.name
-      );
 
-      setCurrentPage(1);
-
-      setSuggestions([]);
-
-      setShowSuggestions(false);
+      getInvoices();
 
     };
-
-
-  // =========================
-  // CLEAR SEARCH
-  // =========================
-
-  const clearSearch = () => {
-
-    setSearch("");
-
-    setDebouncedSearch("");
-
-    setSuggestions([]);
-
-    setShowSuggestions(false);
-
-    setCurrentPage(1);
-
-  };
 
 
   // =========================
@@ -365,85 +392,27 @@ export default function ViewMedicinePage() {
   // =========================
 
   const handleView =
-    (medicine) => {
+    (invoice) => {
 
       setSelected(
-        medicine
+        invoice
       );
 
-      document
-        .getElementById(
-          "medicine_details_modal"
-        )
-        ?.showModal();
-
     };
 
 
   // =========================
-  // DELETE
-  // NO POPUP
+  // TODAY
   // =========================
 
-  const handleDelete =
-    async (medicine) => {
-
-      if (
-        deletingId
-      ) return;
+  const today =
+    getTodayDate();
 
 
-      try {
+  const isTodayActive =
 
-        setDeletingId(
-          medicine._id
-        );
-
-
-        const res =
-          await fetch(
-            `/api/software/medicines/${medicine._id}`,
-            {
-              method: "DELETE",
-            }
-          );
-
-
-        const data =
-          await res.json();
-
-
-        if (!res.ok) {
-
-          console.error(
-            data.message ||
-            "Delete failed"
-          );
-
-          return;
-
-        }
-
-
-        // Reload current page
-        await getMedicines();
-
-      }
-      catch (error) {
-
-        console.error(
-          "Medicine Delete Error:",
-          error
-        );
-
-      }
-      finally {
-
-        setDeletingId(null);
-
-      }
-
-    };
+    fromDate === today &&
+    toDate === today;
 
 
   // =========================
@@ -452,25 +421,32 @@ export default function ViewMedicinePage() {
 
   const showingFrom =
 
-    totalMedicines
+    totalInvoices
 
-      ? (
-          currentPage - 1
-        ) *
-        MEDICINES_PER_PAGE
-        + 1
+      ?
 
-      : 0;
+      (
+        currentPage - 1
+      )
+      *
+      INVOICES_PER_PAGE
+      +
+      1
+
+      :
+
+      0;
 
 
   const showingTo =
 
     Math.min(
 
-      currentPage *
-      MEDICINES_PER_PAGE,
+      currentPage
+      *
+      INVOICES_PER_PAGE,
 
-      totalMedicines
+      totalInvoices
 
     );
 
@@ -486,610 +462,182 @@ export default function ViewMedicinePage() {
 
       <h1 className="mb-5 text-center text-xl font-semibold text-sky-700">
 
-        View Medicine
+        View Invoice
 
       </h1>
 
 
       {/* =========================
-          SEARCH
+          FILTER
       ========================= */}
 
-      <div className="relative mx-auto mb-5 max-w-xl">
+      <InvoiceFilter
 
-        <div className="flex items-center rounded-lg border border-slate-200 bg-white">
+        today={today}
 
-          <FaSearch className="ml-3 text-sm text-slate-400" />
+        isTodayActive={
+          isTodayActive
+        }
 
+        fromDate={
+          fromDate
+        }
 
-          <input
-            type="text"
-            value={search}
-            onChange={handleSearchChange}
-            onFocus={() => {
+        toDate={
+          toDate
+        }
 
-              if (
-                suggestions.length
-              ) {
+        invoiceSearch={
+          invoiceSearch
+        }
 
-                setShowSuggestions(true);
+        setFromDate={
+          setFromDate
+        }
 
-              }
+        setToDate={
+          setToDate
+        }
 
-            }}
-            placeholder="Search medicine name..."
-            autoComplete="off"
-            className="h-11 w-full bg-transparent px-3 text-sm outline-none"
-          />
-
-
-          {search && (
-
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="mr-2 flex size-8 cursor-pointer items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-red-500"
-            >
-
-              <FaTimes />
-
-            </button>
-
-          )}
-
-        </div>
+        setInvoiceSearch={
+          setInvoiceSearch
+        }
 
 
-        {/* =========================
-            SUGGESTIONS
-        ========================= */}
+        onToday={() => {
 
-        {showSuggestions &&
-          suggestions.length > 0 && (
+          setFromDate(
+            today
+          );
 
-          <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-72 overflow-y-auto rounded-lg border border-slate-100 bg-white p-1 shadow-lg">
+          setToDate(
+            today
+          );
 
-            {suggestions.map(
-              (medicine) => (
+          setInvoiceSearch(
+            ""
+          );
 
-                <button
-                  key={medicine._id}
-                  type="button"
-                  onClick={() =>
-                    handleSuggestionSelect(
-                      medicine
-                    )
-                  }
-                  className="flex w-full cursor-pointer items-center justify-between gap-4 rounded-lg px-3 py-2.5 text-left hover:bg-blue-50"
-                >
+          setCurrentPage(
+            1
+          );
 
-                  <span className="text-sm font-medium text-slate-700">
-
-                    {medicine.name}
-
-                  </span>
+        }}
 
 
-                  <span className="shrink-0 text-sm font-semibold text-emerald-700">
+        onClear={() => {
 
-                    ৳{medicine.salePrice}
+          setFromDate(
+            ""
+          );
 
-                  </span>
+          setToDate(
+            ""
+          );
 
-                </button>
+          setInvoiceSearch(
+            ""
+          );
 
-              )
-            )}
+          setCurrentPage(
+            1
+          );
 
-          </div>
+        }}
 
-        )}
-
-      </div>
-
-
-      {/* =========================
-          RESULT INFO
-      ========================= */}
-
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
-
-        <span>
-
-          Showing{" "}
-
-          <strong>
-            {showingFrom}
-          </strong>
-
-          {" - "}
-
-          <strong>
-            {showingTo}
-          </strong>
-
-          {" of "}
-
-          <strong>
-            {totalMedicines}
-          </strong>
-
-        </span>
-
-
-        <span>
-
-          Page{" "}
-
-          <strong>
-            {currentPage}
-          </strong>
-
-          {" / "}
-
-          <strong>
-            {totalPages}
-          </strong>
-
-        </span>
-
-      </div>
+      />
 
 
       {/* =========================
           TABLE
       ========================= */}
 
-      <div className="overflow-hidden rounded-xl border border-slate-100">
+      {
+        loading
+          ?
 
-        <div className="overflow-x-auto">
+          <p className="py-10 text-center">
 
-          <table className="table">
+            Loading...
 
-            <thead>
+          </p>
 
-              <tr className="bg-slate-50 text-slate-600">
+          :
 
-                <th className="w-16">
-                  SL
-                </th>
+          <InvoiceTable
 
-                <th>
-                  Name
-                </th>
+            invoices={
+              invoices
+            }
 
-                <th>
-                  Price
-                </th>
+            onView={
+              handleView
+            }
 
-                <th className="text-center">
-                  Action
-                </th>
+            onDelete={
+              handleDelete
+            }
 
-              </tr>
-
-            </thead>
-
-
-            <tbody>
-
-              {loading ? (
-
-                <tr>
-
-                  <td
-                    colSpan="4"
-                    className="py-12 text-center"
-                  >
-
-                    <span className="loading loading-spinner loading-md text-blue-600" />
-
-                  </td>
-
-                </tr>
-
-              ) : error ? (
-
-                <tr>
-
-                  <td
-                    colSpan="4"
-                    className="py-10 text-center text-red-500"
-                  >
-
-                    {error}
-
-                  </td>
-
-                </tr>
-
-              ) : medicines.length === 0 ? (
-
-                <tr>
-
-                  <td
-                    colSpan="4"
-                    className="py-10 text-center text-slate-400"
-                  >
-
-                    No medicine found
-
-                  </td>
-
-                </tr>
-
-              ) : (
-
-                medicines.map(
-                  (
-                    medicine,
-                    index
-                  ) => (
-
-                    <tr
-                      key={medicine._id}
-                      className="hover:bg-slate-50"
-                    >
-
-                      <td className="text-slate-400">
-
-                        {
-                          (
-                            currentPage - 1
-                          ) *
-                          MEDICINES_PER_PAGE
-                          +
-                          index
-                          +
-                          1
-                        }
-
-                      </td>
-
-
-                      <td className="font-medium text-slate-700">
-
-                        {medicine.name}
-
-                      </td>
-
-
-                      <td className="font-semibold text-emerald-700">
-
-                        ৳{medicine.salePrice}
-
-                      </td>
-
-
-                      <td>
-
-                        <div className="flex items-center justify-center gap-2">
-
-
-                          {/* VIEW */}
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleView(
-                                medicine
-                              )
-                            }
-                            className="btn btn-sm cursor-pointer border-0 bg-blue-50 text-blue-700 hover:bg-blue-100"
-                          >
-
-                            <FaEye />
-
-                            <span className="hidden sm:inline">
-                              View
-                            </span>
-
-                          </button>
-
-
-                          {/* DELETE */}
-
-                          <button
-                            type="button"
-                            disabled={
-                              deletingId ===
-                              medicine._id
-                            }
-                            onClick={() =>
-                              handleDelete(
-                                medicine
-                              )
-                            }
-                            className="btn btn-square btn-sm cursor-pointer border-0 bg-red-50 text-red-600 hover:bg-red-100 disabled:cursor-wait"
-                          >
-
-                            {deletingId ===
-                            medicine._id ? (
-
-                              <span className="loading loading-spinner loading-xs" />
-
-                            ) : (
-
-                              <FaTimes />
-
-                            )}
-
-                          </button>
-
-                        </div>
-
-                      </td>
-
-                    </tr>
-
-                  )
-                )
-
-              )}
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-      </div>
+          />
+      }
 
 
       {/* =========================
           PAGINATION
       ========================= */}
 
-      {totalPages > 1 && (
+      <InvoicePagination
 
-        <div className="mt-5 flex items-center justify-center gap-2">
+        currentPage={
+          currentPage
+        }
 
-          <button
-            type="button"
-            disabled={
-              currentPage <= 1
-            }
-            onClick={() =>
-              setCurrentPage(
-                (prev) =>
-                  prev - 1
-              )
-            }
-            className="btn btn-sm cursor-pointer disabled:cursor-not-allowed"
-          >
+        totalPages={
+          totalPages
+        }
 
-            Previous
+        totalInvoices={
+          totalInvoices
+        }
 
-          </button>
+        showingFrom={
+          showingFrom
+        }
 
+        showingTo={
+          showingTo
+        }
 
-          <span className="px-3 text-sm text-slate-500">
+        setCurrentPage={
+          setCurrentPage
+        }
 
-            {currentPage}
-
-            {" / "}
-
-            {totalPages}
-
-          </span>
-
-
-          <button
-            type="button"
-            disabled={
-              currentPage >=
-              totalPages
-            }
-            onClick={() =>
-              setCurrentPage(
-                (prev) =>
-                  prev + 1
-              )
-            }
-            className="btn btn-sm cursor-pointer disabled:cursor-not-allowed"
-          >
-
-            Next
-
-          </button>
-
-        </div>
-
-      )}
+      />
 
 
       {/* =========================
           VIEW MODAL
       ========================= */}
 
-      <dialog
-        id="medicine_details_modal"
-        className="modal"
-      >
+      {
+        selected &&
 
-        <div className="modal-box">
+        <InvoiceModal
 
-          <form method="dialog">
+          invoice={
+            selected
+          }
 
-            <button
-              type="submit"
-              className="btn btn-circle btn-ghost btn-sm absolute right-3 top-3 cursor-pointer"
-            >
+          onClose={() =>
+            setSelected(null)
+          }
 
-              ✕
+        />
+      }
 
-            </button>
-
-          </form>
-
-
-          <h3 className="mb-5 text-lg font-bold text-slate-800">
-
-            Medicine Details
-
-          </h3>
-
-
-          {selected && (
-
-            <div className="space-y-3">
-
-              <DetailRow
-                label="ID"
-                value={selected._id}
-              />
-
-              <DetailRow
-                label="Name"
-                value={selected.name}
-              />
-
-              <DetailRow
-                label="Search Name"
-                value={
-                  selected.searchName
-                }
-              />
-
-              <DetailRow
-                label="Sale Price"
-                value={`৳${selected.salePrice}`}
-              />
-
-              <DetailRow
-                label="Status"
-                value={
-                  selected.isActive
-                    ? "Active"
-                    : "Inactive"
-                }
-              />
-
-              <DetailRow
-                label="Created By"
-                value={
-                  selected.createdBy?.name ||
-                  "-"
-                }
-              />
-
-              <DetailRow
-                label="Created Mobile"
-                value={
-                  selected.createdBy?.mobile ||
-                  "-"
-                }
-              />
-
-              <DetailRow
-                label="Updated By"
-                value={
-                  selected.updatedBy?.name ||
-                  "-"
-                }
-              />
-
-              <DetailRow
-                label="Updated Mobile"
-                value={
-                  selected.updatedBy?.mobile ||
-                  "-"
-                }
-              />
-
-              <DetailRow
-                label="Created At"
-                value={
-                  formatDate(
-                    selected.createdAt
-                  )
-                }
-              />
-
-              <DetailRow
-                label="Updated At"
-                value={
-                  formatDate(
-                    selected.updatedAt
-                  )
-                }
-              />
-
-            </div>
-
-          )}
-
-        </div>
-
-
-        <form
-          method="dialog"
-          className="modal-backdrop"
-        >
-
-          <button>
-            close
-          </button>
-
-        </form>
-
-      </dialog>
 
     </div>
 
-  );
-
-}
-
-
-
-// =========================
-// DETAIL ROW
-// =========================
-
-function DetailRow({
-  label,
-  value,
-}) {
-
-  return (
-
-    <div className="flex items-start justify-between gap-4 rounded-lg bg-slate-50 px-4 py-3">
-
-      <span className="text-sm text-slate-500">
-
-        {label}
-
-      </span>
-
-      <span className="break-all text-right text-sm font-medium text-slate-700">
-
-        {value ?? "-"}
-
-      </span>
-
-    </div>
-
-  );
-
-}
-
-
-
-// =========================
-// DATE FORMAT
-// =========================
-
-function formatDate(date) {
-
-  if (!date) {
-    return "-";
-  }
-
-  return new Date(
-    date
-  ).toLocaleString(
-    "en-GB"
   );
 
 }
