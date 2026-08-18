@@ -45,6 +45,10 @@ import InvoiceOptions from "./(allInvoice)/InvoiceOptions";
 
 import SaveInvoiceButton from "./(allInvoice)/SaveInvoiceButton";
 
+import {
+  getDhakaDateOnly,
+} from "@/lib/date";
+
 
 
 
@@ -204,19 +208,9 @@ export default function CreateInvoice() {
 
 
 
-
-    const today =
-
-      new Date()
-
-        .toISOString()
-
-        .split("T")[0];
-
-
-
-    setInvoiceDate(today);
-
+    setInvoiceDate(
+      getDhakaDateOnly()
+    );
 
 
     loadInvoiceNumber();
