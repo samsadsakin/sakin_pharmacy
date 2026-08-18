@@ -27,16 +27,16 @@ export default function EditMedicineUpdate({
 
 
 
-  const [name,setName] =
+  const [name, setName] =
     useState("");
 
 
-  const [price,setPrice] =
+  const [price, setPrice] =
     useState("");
 
 
 
-  const [loading,setLoading] =
+  const [loading, setLoading] =
     useState(false);
 
 
@@ -45,10 +45,10 @@ export default function EditMedicineUpdate({
 
 
 
-  useEffect(()=>{
+  useEffect(() => {
 
 
-    if(medicine){
+    if (medicine) {
 
 
       setName(
@@ -64,7 +64,7 @@ export default function EditMedicineUpdate({
     }
 
 
-  },[medicine]);
+  }, [medicine]);
 
 
 
@@ -76,20 +76,20 @@ export default function EditMedicineUpdate({
 
 
 
-  async function handleSave(){
+  async function handleSave() {
 
 
 
-    if(!name || !price){
+    if (!name || !price) {
 
 
       Swal.fire({
 
-        title:"Required",
+        title: "Required",
 
-        text:"Medicine name and price required",
+        text: "Medicine name and price required",
 
-        icon:"warning"
+        icon: "warning"
 
       });
 
@@ -105,7 +105,7 @@ export default function EditMedicineUpdate({
 
 
 
-    try{
+    try {
 
 
       setLoading(true);
@@ -124,30 +124,30 @@ export default function EditMedicineUpdate({
           {
 
 
-            method:"PUT",
+            method: "PUT",
 
 
-            headers:{
+            headers: {
 
 
               "Content-Type":
 
-              "application/json"
+                "application/json"
 
 
             },
 
 
-            body:JSON.stringify({
+            body: JSON.stringify({
 
 
-              id:medicine._id,
+              id: medicine._id,
 
 
-              medicineName:name,
+              medicineName: name,
 
 
-              newPrice:Number(price)
+              newPrice: Number(price)
 
 
 
@@ -175,21 +175,21 @@ export default function EditMedicineUpdate({
 
 
 
-      if(data.success){
+      if (data.success) {
 
 
 
         Swal.fire({
 
-          title:"Updated",
+          title: "Updated",
 
-          text:"Medicine update saved",
+          text: "Medicine update saved",
 
-          icon:"success",
+          icon: "success",
 
-          timer:1200,
+          timer: 1200,
 
-          showConfirmButton:false
+          showConfirmButton: false
 
         });
 
@@ -205,18 +205,18 @@ export default function EditMedicineUpdate({
       }
 
 
-      else{
+      else {
 
 
         Swal.fire({
 
-          title:"Failed",
+          title: "Failed",
 
           text:
             data.message ||
             "Update failed",
 
-          icon:"error"
+          icon: "error"
 
         });
 
@@ -231,7 +231,7 @@ export default function EditMedicineUpdate({
 
     }
 
-    catch(error){
+    catch (error) {
 
 
       console.log(error);
@@ -240,11 +240,11 @@ export default function EditMedicineUpdate({
 
       Swal.fire({
 
-        title:"Error",
+        title: "Error",
 
-        text:"Something went wrong",
+        text: "Something went wrong",
 
-        icon:"error"
+        icon: "error"
 
       });
 
@@ -252,7 +252,7 @@ export default function EditMedicineUpdate({
 
     }
 
-    finally{
+    finally {
 
 
       setLoading(false);
@@ -271,7 +271,7 @@ export default function EditMedicineUpdate({
 
 
 
-  if(!open){
+  if (!open) {
 
     return null;
 
@@ -355,29 +355,11 @@ export default function EditMedicineUpdate({
 
 
           <input
-
-
             value={name}
-
-
-            onChange={(e)=>
-              setName(e.target.value)
-            }
-
-
-            className="
-            w-full
-            rounded-lg
-            border
-            px-3
-            py-2
-            text-sm
-            "
-
+            readOnly
+            className="w-full rounded-lg border bg-slate-100 px-3 py-2 text-sm text-slate-500 cursor-not-allowed"
             placeholder="Medicine name"
-
           />
-
 
 
 
@@ -392,7 +374,7 @@ export default function EditMedicineUpdate({
             value={price}
 
 
-            onChange={(e)=>
+            onChange={(e) =>
               setPrice(e.target.value)
             }
 
@@ -492,10 +474,10 @@ export default function EditMedicineUpdate({
 
             {
               loading
-              ?
-              "Saving..."
-              :
-              "Save"
+                ?
+                "Saving..."
+                :
+                "Save"
             }
 
 
