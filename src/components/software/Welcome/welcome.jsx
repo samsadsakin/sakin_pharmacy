@@ -33,7 +33,7 @@ export default function WelcomeCard() {
 
     {
       name: "Sales Report",
-      href: "/software/invoiceSales",
+      href: "/software/Invoice/salesReport",
       icon: FaChartLine,
       color: "bg-purple-50 text-purple-700",
     },

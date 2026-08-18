@@ -43,7 +43,7 @@ export default function InvoiceNav() {
 
     {
       name: "Sales",
-      href: "/software/invoiceSales",
+      href: "/software/Invoice/salesReport",
       icon: FaChartLine,
     },
   ];
