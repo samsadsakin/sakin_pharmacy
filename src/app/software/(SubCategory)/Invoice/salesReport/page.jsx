@@ -21,12 +21,7 @@ import {
 } from "recharts";
 
 
-// ==============================
-// MONEY
-// ==============================
-
 function money(value) {
-
   return Number(
     value || 0
   ).toLocaleString(
@@ -35,13 +30,8 @@ function money(value) {
       maximumFractionDigits: 2,
     }
   );
-
 }
 
-
-// ==============================
-// PAGE
-// ==============================
 
 export default function SalesReportPage() {
 
@@ -50,33 +40,36 @@ export default function SalesReportPage() {
     setReport,
   ] = useState(null);
 
-
   const [
     loading,
     setLoading,
   ] = useState(true);
-
 
   const [
     error,
     setError,
   ] = useState("");
 
-
   const [
     selectedMobile,
     setSelectedMobile,
   ] = useState("");
 
+  const [
+    selectedDate,
+    setSelectedDate,
+  ] = useState("");
 
-  // ==============================
+
+  // =========================
   // LOAD REPORT
-  // ==============================
+  // =========================
 
   const loadReport =
-    async (
-      mobile = ""
-    ) => {
+    async ({
+      mobile = selectedMobile,
+      date = selectedDate,
+    } = {}) => {
 
       try {
 
@@ -94,6 +87,16 @@ export default function SalesReportPage() {
           params.set(
             "sellerNumber",
             mobile
+          );
+
+        }
+
+
+        if (date) {
+
+          params.set(
+            "date",
+            date
           );
 
         }
@@ -122,9 +125,7 @@ export default function SalesReportPage() {
         }
 
 
-        setReport(
-          data
-        );
+        setReport(data);
 
 
         setSelectedMobile(
@@ -156,20 +157,23 @@ export default function SalesReportPage() {
     };
 
 
-  // ==============================
+  // =========================
   // FIRST LOAD
-  // ==============================
+  // =========================
 
   useEffect(() => {
 
-    loadReport();
+    loadReport({
+      mobile: "",
+      date: "",
+    });
 
   }, []);
 
 
-  // ==============================
-  // SELECT STAFF
-  // ==============================
+  // =========================
+  // STAFF CHANGE
+  // =========================
 
   const handleStaffChange =
     (e) => {
@@ -183,11 +187,54 @@ export default function SalesReportPage() {
       );
 
 
-      loadReport(
-        mobile
-      );
+      loadReport({
+        mobile,
+        date: selectedDate,
+      });
 
     };
+
+
+  // =========================
+  // DATE SEARCH
+  // =========================
+
+  const handleDateSearch = () => {
+
+    if (!selectedDate) {
+      return;
+    }
+
+
+    loadReport({
+      mobile: selectedMobile,
+      date: selectedDate,
+    });
+
+  };
+
+
+  // =========================
+  // CLEAR FILTER
+  // =========================
+
+  const handleClear = () => {
+
+    setSelectedDate("");
+
+
+    loadReport({
+      mobile: selectedMobile,
+      date: "",
+    });
+
+  };
+
+
+  const dateFilterActive =
+    Boolean(
+      report?.filter?.date
+    );
 
 
   return (
@@ -195,9 +242,9 @@ export default function SalesReportPage() {
     <div className="space-y-4">
 
 
-      {/* ==============================
+      {/* =========================
           HEADER
-      ============================== */}
+      ========================= */}
 
       <div className="rounded-xl bg-white p-4 shadow-sm">
 
@@ -209,21 +256,19 @@ export default function SalesReportPage() {
         </h1>
 
 
-        {/* ==============================
-            MANAGER / ADMIN SELECTOR
-        ============================== */}
+        {/* =========================
+            STAFF SELECT
+        ========================= */}
 
         {(
-          report?.viewer?.role ===
-            "manager" ||
-          report?.viewer?.role ===
-            "admin"
+          report?.viewer?.role === "manager" ||
+          report?.viewer?.role === "admin"
         ) && (
 
           <div className="mx-auto mt-4 max-w-md">
 
 
-            <label className="mb-1 block text-xs font-medium text-slate-500">
+            <label className="mb-1 block text-xs text-slate-500">
 
               Select Staff
 
@@ -231,26 +276,17 @@ export default function SalesReportPage() {
 
 
             <select
-              value={
-                selectedMobile
-              }
-              onChange={
-                handleStaffChange
-              }
+              value={selectedMobile}
+              onChange={handleStaffChange}
               className="select select-bordered w-full cursor-pointer"
             >
-
 
               {report?.staffOptions?.map(
                 (staff) => (
 
                   <option
-                    key={
-                      staff.mobile
-                    }
-                    value={
-                      staff.mobile
-                    }
+                    key={staff.mobile}
+                    value={staff.mobile}
                   >
 
                     {staff.name}
@@ -268,7 +304,6 @@ export default function SalesReportPage() {
                 )
               )}
 
-
             </select>
 
 
@@ -277,14 +312,13 @@ export default function SalesReportPage() {
         )}
 
 
-        {/* ==============================
-            SELECTED PERSON
-        ============================== */}
+        {/* =========================
+            SELECTED STAFF
+        ========================= */}
 
         {report?.selectedSeller && (
 
-          <div className="mt-4 text-center">
-
+          <div className="mt-3 text-center">
 
             <p className="font-semibold text-slate-700">
 
@@ -293,7 +327,6 @@ export default function SalesReportPage() {
               }
 
             </p>
-
 
             <p className="text-xs text-slate-400">
 
@@ -313,18 +346,70 @@ export default function SalesReportPage() {
 
             </p>
 
-
           </div>
 
         )}
 
 
+        {/* =========================
+            SINGLE DATE FILTER
+        ========================= */}
+
+        <div className="mt-4 flex flex-wrap items-end justify-center gap-2">
+
+
+          <div>
+
+            <label className="mb-1 block text-xs text-slate-500">
+
+              Date
+
+            </label>
+
+
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) =>
+                setSelectedDate(
+                  e.target.value
+                )
+              }
+              className="input input-sm input-bordered"
+            />
+
+          </div>
+
+
+          <button
+            type="button"
+            onClick={handleDateSearch}
+            className="btn btn-sm cursor-pointer bg-blue-600 text-white hover:bg-blue-700"
+          >
+
+            Search
+
+          </button>
+
+
+          <button
+            type="button"
+            onClick={handleClear}
+            className="btn btn-sm cursor-pointer"
+          >
+
+            Clear Filter
+
+          </button>
+
+
+        </div>
+
+
       </div>
 
 
-      {/* ==============================
-          ERROR
-      ============================== */}
+      {/* ERROR */}
 
       {error && (
 
@@ -337,9 +422,7 @@ export default function SalesReportPage() {
       )}
 
 
-      {/* ==============================
-          LOADING
-      ============================== */}
+      {/* LOADING */}
 
       {loading ? (
 
@@ -354,183 +437,204 @@ export default function SalesReportPage() {
         <>
 
 
-          {/* ==============================
-              SUMMARY
-          ============================== */}
+          {/* =========================
+              FILTER INFO
+          ========================= */}
+
+          <div className="rounded-xl bg-white px-4 py-3 text-center shadow-sm">
+
+
+            {dateFilterActive ? (
+
+              <>
+
+                <p className="text-xs text-slate-400">
+
+                  Sales Date
+
+                </p>
+
+                <p className="font-semibold text-slate-700">
+
+                  {report.filter.date}
+
+                </p>
+
+              </>
+
+            ) : (
+
+              <>
+
+                <p className="text-xs text-slate-400">
+
+                  Last 7 Days
+
+                </p>
+
+                <p className="font-semibold text-slate-700">
+
+                  {report?.range?.from}
+
+                  {" → "}
+
+                  {report?.range?.to}
+
+                </p>
+
+              </>
+
+            )}
+
+
+          </div>
+
+
+          {/* =========================
+              TOTAL
+          ========================= */}
 
           <div className="grid gap-3 sm:grid-cols-2">
 
 
             <SummaryCard
-              title="Last 7 Days Invoices"
+              title={
+                dateFilterActive
+                  ? "Total Invoice"
+                  : "Last 7 Days Invoice"
+              }
               value={
-                report?.summary
-                  ?.totalInvoices ||
+                report?.summary?.totalInvoices ||
                 0
               }
-              icon={
-                FaFileInvoice
-              }
+              icon={FaFileInvoice}
             />
 
 
             <SummaryCard
-              title="Last 7 Days Payable"
-              value={`৳${money(
-                report?.summary
-                  ?.totalPayable
-              )}`}
-              icon={
-                FaMoneyBillWave
+              title={
+                dateFilterActive
+                  ? "Total Payable"
+                  : "Last 7 Days Payable"
               }
+              value={`৳${money(
+                report?.summary?.totalPayable
+              )}`}
+              icon={FaMoneyBillWave}
             />
 
 
           </div>
 
 
-          {/* ==============================
-              DATE RANGE
-          ============================== */}
-
-          <div className="rounded-xl bg-white px-4 py-3 text-center shadow-sm">
-
-
-            <p className="text-xs text-slate-400">
-
-              Last 7 Days
-
-            </p>
-
-
-            <p className="mt-1 text-sm font-medium text-slate-700">
-
-              {report?.week?.from}
-
-              {" → "}
-
-              {report?.week?.to}
-
-            </p>
-
-
-          </div>
-
-
-          {/* ==============================
+          {/* =========================
               CHART
-          ============================== */}
+              ONLY WITHOUT DATE FILTER
+          ========================= */}
 
-          <div className="rounded-xl bg-white p-4 shadow-sm">
+          {!dateFilterActive && (
 
-
-            <h2 className="font-semibold text-slate-700">
-
-              Last 7 Days Sales
-
-            </h2>
+            <div className="rounded-xl bg-white p-4 shadow-sm">
 
 
-            <p className="mb-4 text-xs text-slate-400">
+              <h2 className="font-semibold text-slate-700">
 
-              {
-                report?.selectedSeller
-                  ?.name
-              }
+                Last 7 Days Sales
 
-              {" • "}
-
-              {
-                report?.selectedSeller
-                  ?.mobile
-              }
-
-            </p>
+              </h2>
 
 
-            <div className="h-72 w-full">
+              <p className="mb-4 text-xs text-slate-400">
+
+                {
+                  report?.selectedSeller?.name
+                }
+
+                {" • "}
+
+                {
+                  report?.selectedSeller?.mobile
+                }
+
+              </p>
 
 
-              <ResponsiveContainer
-                width="100%"
-                height="100%"
-              >
+              <div className="h-72 w-full">
 
-                <BarChart
-                  data={
-                    report?.weekChart ||
-                    []
-                  }
-                  margin={{
-                    top: 10,
-                    right: 10,
-                    left: 0,
-                    bottom: 5,
-                  }}
+
+                <ResponsiveContainer
+                  width="100%"
+                  height="100%"
                 >
 
-
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                  />
-
-
-                  <XAxis
-                    dataKey="day"
-                    tick={{
-                      fontSize: 11,
-                    }}
-                  />
-
-
-                  <YAxis
-                    tick={{
-                      fontSize: 10,
-                    }}
-                  />
-
-
-                  <Tooltip
-                    content={
-                      <CustomTooltip />
+                  <BarChart
+                    data={
+                      report?.daily || []
                     }
-                  />
+                  >
+
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                    />
 
 
-                  <Bar
-                    dataKey="totalPayable"
-                    fill="#2563eb"
-                    radius={[
-                      5,
-                      5,
-                      0,
-                      0,
-                    ]}
-                  />
+                    <XAxis
+                      dataKey="day"
+                      tick={{
+                        fontSize: 11,
+                      }}
+                    />
 
 
-                </BarChart>
+                    <YAxis
+                      tick={{
+                        fontSize: 10,
+                      }}
+                    />
 
-              </ResponsiveContainer>
+
+                    <Tooltip
+                      content={
+                        <CustomTooltip />
+                      }
+                    />
+
+
+                    <Bar
+                      dataKey="totalPayable"
+                      fill="#2563eb"
+                      radius={[
+                        5,
+                        5,
+                        0,
+                        0,
+                      ]}
+                    />
+
+                  </BarChart>
+
+                </ResponsiveContainer>
+
+
+              </div>
 
 
             </div>
 
+          )}
 
-          </div>
 
-
-          {/* ==============================
-              DAILY TABLE
-          ============================== */}
+          {/* =========================
+              DATE WISE DATA
+          ========================= */}
 
           <div className="rounded-xl bg-white p-4 shadow-sm">
 
 
             <h2 className="mb-3 font-semibold text-slate-700">
 
-              Daily Report
+              Sales Details
 
             </h2>
 
@@ -545,34 +649,21 @@ export default function SalesReportPage() {
 
                   <tr className="bg-slate-50">
 
-
                     <th>
-
                       Day
-
                     </th>
-
 
                     <th>
-
                       Date
-
                     </th>
-
 
                     <th className="text-center">
-
                       Invoice
-
                     </th>
-
 
                     <th className="text-right">
-
                       Payable
-
                     </th>
-
 
                   </tr>
 
@@ -582,54 +673,69 @@ export default function SalesReportPage() {
                 <tbody>
 
 
-                  {report?.weekChart?.map(
-                    (day) => (
+                  {report?.daily?.length ? (
 
-                      <tr
-                        key={
-                          day.date
-                        }
+                    report.daily.map(
+                      (item) => (
+
+                        <tr
+                          key={item.date}
+                        >
+
+                          <td className="font-medium">
+
+                            {item.day}
+
+                          </td>
+
+
+                          <td>
+
+                            {item.date}
+
+                          </td>
+
+
+                          <td className="text-center">
+
+                            {
+                              item.totalInvoices
+                            }
+
+                          </td>
+
+
+                          <td className="text-right font-semibold text-emerald-700">
+
+                            ৳
+                            {
+                              money(
+                                item.totalPayable
+                              )
+                            }
+
+                          </td>
+
+                        </tr>
+
+                      )
+                    )
+
+                  ) : (
+
+                    <tr>
+
+                      <td
+                        colSpan="4"
+                        className="py-8 text-center text-slate-400"
                       >
 
+                        No sales found
 
-                        <td className="font-medium">
+                      </td>
 
-                          {day.day}
+                    </tr>
 
-                        </td>
-
-
-                        <td>
-
-                          {day.date}
-
-                        </td>
-
-
-                        <td className="text-center">
-
-                          {
-                            day.totalInvoices
-                          }
-
-                        </td>
-
-
-                        <td className="text-right font-semibold text-emerald-700">
-
-                          ৳
-                          {
-                            money(
-                              day.totalPayable
-                            )
-                          }
-
-                        </td>
-
-
-                      </tr>
-
-                    )
                   )}
 
 
@@ -657,9 +763,9 @@ export default function SalesReportPage() {
 }
 
 
-// ==============================
-// SUMMARY CARD
-// ==============================
+// =========================
+// CARD
+// =========================
 
 function SummaryCard({
   title,
@@ -671,9 +777,7 @@ function SummaryCard({
 
     <div className="rounded-xl bg-white p-4 shadow-sm">
 
-
       <div className="flex items-center gap-3">
-
 
         <div className="flex size-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
 
@@ -690,7 +794,6 @@ function SummaryCard({
 
           </p>
 
-
           <p className="text-xl font-bold text-slate-700">
 
             {value}
@@ -699,9 +802,7 @@ function SummaryCard({
 
         </div>
 
-
       </div>
-
 
     </div>
 
@@ -710,9 +811,9 @@ function SummaryCard({
 }
 
 
-// ==============================
+// =========================
 // TOOLTIP
-// ==============================
+// =========================
 
 function CustomTooltip({
   active,
@@ -730,20 +831,18 @@ function CustomTooltip({
 
 
   const data =
-    payload[0]?.payload;
+    payload[0].payload;
 
 
   return (
 
-    <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-lg">
+    <div className="rounded-lg border bg-white p-3 shadow-lg">
 
-
-      <p className="font-semibold text-slate-700">
+      <p className="font-semibold">
 
         {data.day}
 
       </p>
-
 
       <p className="text-xs text-slate-400">
 
@@ -751,21 +850,15 @@ function CustomTooltip({
 
       </p>
 
-
       <p className="mt-2 text-sm">
 
-        Invoices:{" "}
+        Invoice:{" "}
 
         <strong>
-
-          {
-            data.totalInvoices
-          }
-
+          {data.totalInvoices}
         </strong>
 
       </p>
-
 
       <p className="text-sm">
 
@@ -783,7 +876,6 @@ function CustomTooltip({
         </strong>
 
       </p>
-
 
     </div>
 

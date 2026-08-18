@@ -3,9 +3,7 @@ import {
 } from "next/headers";
 
 import connectDB from "@/lib/mongodb";
-
 import Invoice from "@/models/invoice";
-
 import User from "@/models/user";
 
 import {
@@ -17,47 +15,36 @@ export const runtime =
   "nodejs";
 
 
-// ==============================
+// =========================
 // NUMBER
-// ==============================
+// =========================
 
 function toNumber(value) {
 
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
-
-    return 0;
-
-  }
-
-
   const number =
     Number(
-      String(value)
+      String(
+        value ?? 0
+      )
         .replace(/,/g, "")
         .replace(/[^\d.-]/g, "")
     );
 
 
-  return Number.isFinite(
-    number
-  )
+  return Number.isFinite(number)
     ? number
     : 0;
 
 }
 
 
-// ==============================
+// =========================
 // PAYABLE
-// ==============================
+// =========================
 
 function getPayable(invoice) {
 
-  const candidates = [
+  const values = [
 
     invoice.payableAmount,
 
@@ -69,28 +56,15 @@ function getPayable(invoice) {
 
     invoice.grandTotal,
 
-    invoice.netTotal,
+    invoice.calculation?.netTotal,
 
-    invoice.calculation
-      ?.payableAmount,
-
-    invoice.calculation
-      ?.payable,
-
-    invoice.calculation
-      ?.netTotal,
-
-    invoice.calculation
-      ?.totalPayable,
-
-    invoice.totals
-      ?.payable,
+    invoice.calculation?.payable,
 
   ];
 
 
   for (
-    const value of candidates
+    const value of values
   ) {
 
     if (
@@ -113,11 +87,11 @@ function getPayable(invoice) {
 }
 
 
-// ==============================
+// =========================
 // DHAKA DATE
-// ==============================
+// =========================
 
-function dhakaDateString(
+function getDhakaDate(
   input = new Date()
 ) {
 
@@ -159,9 +133,9 @@ function dhakaDateString(
 }
 
 
-// ==============================
+// =========================
 // ADD DAYS
-// ==============================
+// =========================
 
 function addDays(
   dateString,
@@ -190,39 +164,32 @@ function addDays(
 }
 
 
-// ==============================
-// WEEKDAY
-// ==============================
+// =========================
+// DAY NAME
+// =========================
 
 function getDayName(
-  dateString
+  date
 ) {
-
-  const date =
-    new Date(
-      `${dateString}T00:00:00Z`
-    );
-
 
   return new Intl.DateTimeFormat(
     "en-US",
     {
-      weekday:
-        "long",
-
-      timeZone:
-        "UTC",
+      weekday: "long",
+      timeZone: "UTC",
     }
   ).format(
-    date
+    new Date(
+      `${date}T00:00:00Z`
+    )
   );
 
 }
 
 
-// ==============================
-// GET API
-// ==============================
+// =========================
+// API
+// =========================
 
 export async function GET(
   request
@@ -233,9 +200,9 @@ export async function GET(
     await connectDB();
 
 
-    // ==============================
+    // =========================
     // SESSION
-    // ==============================
+    // =========================
 
     const cookieStore =
       await cookies();
@@ -251,15 +218,11 @@ export async function GET(
 
       return Response.json(
         {
-          success:
-            false,
-
-          message:
-            "Not logged in",
+          success: false,
+          message: "Not logged in",
         },
         {
-          status:
-            401,
+          status: 401,
         }
       );
 
@@ -272,21 +235,15 @@ export async function GET(
       );
 
 
-    if (
-      !session?.userId
-    ) {
+    if (!session?.userId) {
 
       return Response.json(
         {
-          success:
-            false,
-
-          message:
-            "Invalid session",
+          success: false,
+          message: "Invalid session",
         },
         {
-          status:
-            401,
+          status: 401,
         }
       );
 
@@ -303,69 +260,24 @@ export async function GET(
         .lean();
 
 
-    if (
-      !user ||
-      user.isActive === false
-    ) {
+    if (!user) {
 
       return Response.json(
         {
-          success:
-            false,
-
-          message:
-            "User not found",
+          success: false,
+          message: "User not found",
         },
         {
-          status:
-            401,
+          status: 401,
         }
       );
 
     }
 
 
-    // ==============================
-    // ROLE CHECK
-    // ==============================
-
-    const allowedRoles = [
-
-      "salesman",
-
-      "manager",
-
-      "admin",
-
-    ];
-
-
-    if (
-      !allowedRoles.includes(
-        user.role
-      )
-    ) {
-
-      return Response.json(
-        {
-          success:
-            false,
-
-          message:
-            "Access denied",
-        },
-        {
-          status:
-            403,
-        }
-      );
-
-    }
-
-
-    // ==============================
-    // URL
-    // ==============================
+    // =========================
+    // PARAMS
+    // =========================
 
     const {
       searchParams,
@@ -375,7 +287,7 @@ export async function GET(
       );
 
 
-    const requestedMobile =
+    const sellerNumber =
       String(
         searchParams.get(
           "sellerNumber"
@@ -383,19 +295,24 @@ export async function GET(
       ).trim();
 
 
-    // ==============================
-    // STAFF OPTIONS
-    // MANAGER / ADMIN ONLY
-    // ==============================
+    const selectedDate =
+      String(
+        searchParams.get(
+          "date"
+        ) || ""
+      ).trim();
+
+
+    // =========================
+    // STAFF LIST
+    // =========================
 
     let staffOptions = [];
 
 
     if (
-      user.role ===
-        "manager" ||
-      user.role ===
-        "admin"
+      user.role === "manager" ||
+      user.role === "admin"
     ) {
 
       staffOptions =
@@ -410,8 +327,7 @@ export async function GET(
           },
 
           isActive: {
-            $ne:
-              false,
+            $ne: false,
           },
 
         })
@@ -419,23 +335,19 @@ export async function GET(
             "name mobile role"
           )
           .sort({
-            name:
-              1,
+            name: 1,
           })
           .lean();
 
     }
 
 
-    // ==============================
-    // TARGET USER
-    // ==============================
+    // =========================
+    // TARGET STAFF
+    // =========================
 
     let targetUser;
 
-
-    // SALESMAN
-    // ALWAYS OWN DATA
 
     if (
       user.role ===
@@ -446,24 +358,21 @@ export async function GET(
         user;
 
     }
-
-    // MANAGER / ADMIN
-
     else {
 
-      const targetMobile =
-        requestedMobile ||
+      const mobile =
+        sellerNumber ||
         user.mobile;
 
 
       targetUser =
         staffOptions.find(
-          (staff) =>
+          (item) =>
             String(
-              staff.mobile
+              item.mobile
             ) ===
             String(
-              targetMobile
+              mobile
             )
         );
 
@@ -472,15 +381,11 @@ export async function GET(
 
         return Response.json(
           {
-            success:
-              false,
-
-            message:
-              "Staff not found",
+            success: false,
+            message: "Staff not found",
           },
           {
-            status:
-              404,
+            status: 404,
           }
         );
 
@@ -489,37 +394,37 @@ export async function GET(
     }
 
 
-    // ==============================
-    // ROLLING LAST 7 DAYS
-    //
-    // TODAY + PREVIOUS 6 DAYS
-    // ==============================
+    // =========================
+    // DATE RANGE
+    // =========================
 
     const today =
-      dhakaDateString();
+      getDhakaDate();
 
 
     const from =
-      addDays(
-        today,
-        -6
-      );
+      selectedDate
+        ? selectedDate
+        : addDays(
+            today,
+            -6
+          );
 
 
     const to =
-      today;
+      selectedDate
+        ? selectedDate
+        : today;
 
 
-    // ==============================
+    // =========================
     // QUERY
-    // ONLY SELECTED PERSON
-    // ==============================
+    // =========================
 
     const query = {
 
       "seller.number":
         targetUser.mobile,
-
 
       createdAt: {
 
@@ -538,10 +443,6 @@ export async function GET(
     };
 
 
-    // ==============================
-    // GET INVOICES
-    // ==============================
-
     const invoices =
       await Invoice.find(
         query
@@ -549,37 +450,33 @@ export async function GET(
         .lean();
 
 
-    // ==============================
-    // CREATE ALL 7 DAYS
-    // ==============================
+    // =========================
+    // DAILY MAP
+    // =========================
 
     const dayMap =
       new Map();
 
 
-    for (
-      let i = 0;
-      i < 7;
-      i++
+    let current =
+      from;
+
+
+    while (
+      current <= to
     ) {
 
-      const date =
-        addDays(
-          from,
-          i
-        );
-
-
       dayMap.set(
-        date,
+        current,
         {
 
           day:
             getDayName(
-              date
+              current
             ),
 
-          date,
+          date:
+            current,
 
           totalInvoices:
             0,
@@ -590,12 +487,19 @@ export async function GET(
         }
       );
 
+
+      current =
+        addDays(
+          current,
+          1
+        );
+
     }
 
 
-    // ==============================
+    // =========================
     // CALCULATE
-    // ==============================
+    // =========================
 
     let totalPayable =
       0;
@@ -617,60 +521,45 @@ export async function GET(
         if (
           !invoice.createdAt
         ) {
-
           return;
-
         }
 
 
         const date =
-          dhakaDateString(
+          getDhakaDate(
             invoice.createdAt
           );
 
 
-        const day =
+        const item =
           dayMap.get(
             date
           );
 
 
-        if (!day) {
-
+        if (!item) {
           return;
-
         }
 
 
-        day.totalInvoices +=
+        item.totalInvoices +=
           1;
 
 
-        day.totalPayable +=
+        item.totalPayable +=
           payable;
 
       }
     );
 
 
-    // ==============================
-    // WEEK CHART
-    // ==============================
-
-    const weekChart =
-      Array.from(
-        dayMap.values()
-      );
-
-
-    // ==============================
+    // =========================
     // RESPONSE
-    // ==============================
+    // =========================
 
     return Response.json({
 
-      success:
-        true,
+      success: true,
 
 
       viewer: {
@@ -703,27 +592,22 @@ export async function GET(
 
       staffOptions:
         user.role ===
-          "salesman"
+        "salesman"
 
           ? []
 
-          : staffOptions.map(
-              (staff) => ({
-
-                name:
-                  staff.name,
-
-                mobile:
-                  staff.mobile,
-
-                role:
-                  staff.role,
-
-              })
-            ),
+          : staffOptions,
 
 
-      week: {
+      filter: {
+
+        date:
+          selectedDate,
+
+      },
+
+
+      range: {
 
         from,
 
@@ -742,7 +626,10 @@ export async function GET(
       },
 
 
-      weekChart,
+      daily:
+        Array.from(
+          dayMap.values()
+        ),
 
     });
 
@@ -757,16 +644,14 @@ export async function GET(
 
     return Response.json(
       {
-        success:
-          false,
+        success: false,
 
         message:
           error.message ||
           "Failed to load report",
       },
       {
-        status:
-          500,
+        status: 500,
       }
     );
 
