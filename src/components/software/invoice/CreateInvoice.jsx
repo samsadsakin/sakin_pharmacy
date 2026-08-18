@@ -347,22 +347,32 @@ export default function CreateInvoice() {
 
       if (data.success) {
 
-
-
         setSeller({
 
           name:
-
             data.user.name,
 
-
           number:
-
             data.user.mobile,
-
 
         });
 
+
+        // =========================
+        // DEFAULT INVOICE TYPE
+        // =========================
+
+        if (
+          data.user.mobile === "01724621816"
+        ) {
+
+          setInvoiceType("kemo");
+
+        } else {
+
+          setInvoiceType("regular");
+
+        }
 
       }
 
