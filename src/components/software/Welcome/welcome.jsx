@@ -47,7 +47,7 @@ export default function WelcomeCard() {
 
     {
       name: "Customers",
-      href: "/software/customers",
+      href: "/software/users",
       icon: FaUsers,
       color: "bg-pink-50 text-pink-700",
     },
