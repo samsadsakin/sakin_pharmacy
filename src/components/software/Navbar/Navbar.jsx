@@ -11,7 +11,7 @@ import {
   FaCartPlus,
   FaChartBar,
   FaFolderPlus,
-  FaCog,
+  FaHome,
   FaCapsules,
   FaBriefcaseMedical,
   FaUsers,
@@ -353,14 +353,14 @@ const Sidebar = ({ children }) => {
 
 
               {/* =========================
-                  SETTINGS
+                  Home
               ========================= */}
 
               <li className="mt-3">
 
                 <button
                   type="button"
-                  data-tip="Settings"
+                  data-tip="Home Page"
                   className="
                     group h-11 w-full rounded-lg
                     text-blue-100
@@ -373,13 +373,13 @@ const Sidebar = ({ children }) => {
 
                   <span className="flex size-8 items-center justify-center rounded-md bg-white/10 group-hover:bg-emerald-500">
 
-                    <FaCog />
+                    <FaHome />
 
                   </span>
 
 
                   <span className="is-drawer-close:hidden">
-                    Settings
+                    Home
                   </span>
 
                 </button>
