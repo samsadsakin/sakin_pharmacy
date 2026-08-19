@@ -10,11 +10,13 @@ import {
 import {
   FaCartPlus,
   FaChartBar,
+  FaFolderPlus,
   FaCog,
   FaCapsules,
   FaBriefcaseMedical,
   FaUsers,
 } from "react-icons/fa";
+
 
 import CountDate from "@/components/webpage/Date/Date";
 
@@ -25,12 +27,17 @@ const menuItems = [
     href: "/software/dashboard",
     icon: FaChartBar,
   },
-
+  {
+    name: "Direct Sale",
+    href: "/software/DirectSale",
+    icon: FaFolderPlus,
+  },
   {
     name: "Create Invoice",
     href: "/software/Invoice",
     icon: FaCartPlus,
   },
+
   {
     name: "Medicine",
     href: "/software/medicine",

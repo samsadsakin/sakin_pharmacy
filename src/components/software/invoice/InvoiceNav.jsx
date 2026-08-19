@@ -13,6 +13,7 @@ import {
   FaFileInvoice,
   FaChartLine,
   FaPrint,
+  FaMoneyBillWave,
 } from "react-icons/fa";
 
 
@@ -45,6 +46,12 @@ export default function InvoiceNav() {
       name: "Sales",
       href: "/software/Invoice/salesReport",
       icon: FaChartLine,
+    },
+
+    {
+      name: "Direct Sale",
+      href: "/software/DirectSale",
+      icon: FaMoneyBillWave,
     },
   ];
 
@@ -162,10 +169,11 @@ export default function InvoiceNav() {
               <Link
                 key={name}
                 href={href}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs transition sm:gap-2 sm:px-4 sm:text-sm ${active
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs transition sm:gap-2 sm:px-4 sm:text-sm ${
+                  active
                     ? "bg-blue-50 font-medium text-blue-700"
                     : "text-slate-500 hover:bg-slate-50"
-                  }`}
+                }`}
               >
 
                 <Icon className="text-xs" />
@@ -187,10 +195,11 @@ export default function InvoiceNav() {
           type="button"
           onClick={handleLatestPrint}
           disabled={printLoading}
-          className={`hidden items-center gap-2 rounded-lg px-4 py-2 text-sm transition md:flex ${printActive
+          className={`hidden items-center gap-2 rounded-lg px-4 py-2 text-sm transition md:flex ${
+            printActive
               ? "bg-blue-50 font-medium text-blue-700"
               : "text-slate-500 hover:bg-slate-50"
-            } disabled:cursor-wait disabled:opacity-60`}
+          } disabled:cursor-wait disabled:opacity-60`}
         >
 
           <FaPrint className="text-xs" />
