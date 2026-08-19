@@ -6,6 +6,7 @@ import {
   FaCartPlus,
   FaFileInvoice,
   FaChartLine,
+  FaFolderPlus,
   FaCapsules,
   FaUsers,
   FaCog,
@@ -17,13 +18,14 @@ export default function WelcomeCard() {
 
   const links = [
 
+
     {
       name: "Create Invoice",
-      href: "/software/Invoice/createInvoice",
+      href: "/software/Invoice",
       icon: FaCartPlus,
       color: "bg-blue-50 text-blue-700",
     },
-
+    
     {
       name: "Invoices",
       href: "/software/Invoice/viewInvoice",
@@ -33,6 +35,18 @@ export default function WelcomeCard() {
 
     {
       name: "Sales Report",
+      href: "/software/DirectSale/directSalesReport",
+      icon: FaChartLine,
+      color: "bg-purple-50 text-purple-700",
+    },
+    {
+      name: "Direct Sale",
+      href: "/software/DirectSale",
+      icon: FaFolderPlus,
+      color: "bg-blue-50 text-blue-700",
+    },
+    {
+      name: "Direct Sales Report",
       href: "/software/Invoice/salesReport",
       icon: FaChartLine,
       color: "bg-purple-50 text-purple-700",
@@ -50,13 +64,6 @@ export default function WelcomeCard() {
       href: "/software/users",
       icon: FaUsers,
       color: "bg-pink-50 text-pink-700",
-    },
-
-    {
-      name: "Settings",
-      href: "/software/settings",
-      icon: FaCog,
-      color: "bg-slate-100 text-slate-700",
     },
 
   ];

@@ -1,5 +1,7 @@
 import Sidebar from "@/components/software/Navbar/Navbar";
 
+import SoftwareGuard from "@/components/software/SoftwareGuard";
+
 
 // =====================================
 // SOFTWARE METADATA
@@ -14,8 +16,10 @@ export const metadata = {
     "Sakin Pharmacy Software",
 
   icons: {
-    icon: "/images/logo2.jpg",
+    icon: "/images/Logo2.jpg",
   },
+
+
 
 };
 
@@ -26,12 +30,15 @@ export default function SoftwareLayout({
 
   return (
 
-    <Sidebar>
+    <SoftwareGuard>
 
-      {children}
+      <Sidebar>
 
-    </Sidebar>
+        {children}
+
+      </Sidebar>
+
+    </SoftwareGuard>
 
   );
-
 }

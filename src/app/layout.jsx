@@ -35,17 +35,12 @@ const geistMono =
 // =====================================
 
 export const metadata = {
-
-  title:
-    "Sakin Pharmacy",
-
-  description:
-    "Sakin Pharmacy",
+  title: "Sakin Pharmacy",
+  description: "Sakin Pharmacy",
 
   icons: {
-    icon: "/images/logo2.jpg",
+    icon: "/images/Logo2.jpg",
   },
-
 };
 
 
