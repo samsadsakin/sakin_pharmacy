@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+
 import {
   useEffect,
   useState,
 } from "react";
 
 import {
+  usePathname,
   useRouter,
 } from "next/navigation";
 
@@ -16,6 +18,13 @@ export default function Navbar() {
   const router =
     useRouter();
 
+  const pathname =
+    usePathname();
+
+
+  // =========================
+  // STATE
+  // =========================
 
   const [
     isOpen,
@@ -56,7 +65,8 @@ export default function Navbar() {
             await fetch(
               "/api/auth/me",
               {
-                cache: "no-store",
+                cache:
+                  "no-store",
               }
             );
 
@@ -120,7 +130,8 @@ export default function Navbar() {
           await fetch(
             "/api/auth/logout",
             {
-              method: "POST",
+              method:
+                "POST",
             }
           );
 
@@ -188,44 +199,83 @@ export default function Navbar() {
   const navItems = [
 
     {
-      name: "Home",
-      href: "/",
+      name:
+        "Home",
+
+      href:
+        "/",
     },
 
-
-    // =========================
-    // SOFTWARE
-    // STAFF ONLY
-    // =========================
 
     ...(canSeeSoftware
       ? [
           {
-            name: "Software",
-            href: "/software",
+            name:
+              "Software",
+
+            href:
+              "/software",
           },
         ]
       : []),
 
 
     {
-      name: "About Us",
-      href: "/about",
+      name:
+        "Medicine",
+
+      href:
+        "/viewOurMedicine",
     },
 
 
     {
-      name: "Contact",
-      href: "/contact",
+      name:
+        "Message Us",
+
+      href:
+        "/sendUsMessage",
     },
 
   ];
 
 
+  // =========================
+  // ACTIVE LINK
+  // =========================
+
+  const isActiveLink =
+    (href) => {
+
+      if (
+        href === "/"
+      ) {
+
+        return (
+          pathname === "/"
+        );
+
+      }
+
+
+      return (
+        pathname === href ||
+        pathname?.startsWith(
+          `${href}/`
+        )
+      );
+
+    };
+
+
   return (
 
-    <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-50 bg-white shadow-sm">
 
+
+      {/* =========================
+          NAVBAR
+      ========================= */}
 
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
 
@@ -240,7 +290,7 @@ export default function Navbar() {
         >
 
 
-          <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-[#002D6D]">
+          <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-blue-900 shadow-sm">
 
 
             <img
@@ -263,7 +313,7 @@ export default function Navbar() {
             </span>
 
 
-            <span className="text-[10px] font-bold tracking-[0.35em] text-[#08781F]">
+            <span className="text-[10px] font-bold tracking-widest text-[#08781F]">
 
               PHARMACY
 
@@ -280,26 +330,40 @@ export default function Navbar() {
             DESKTOP NAV
         ========================= */}
 
-        <div className="hidden items-center gap-8 md:flex">
+        <div className="hidden items-center gap-1 rounded-xl bg-slate-50 p-1 md:flex">
 
 
           {navItems.map(
             ({
               name,
               href,
-            }) => (
+            }) => {
 
-              <Link
-                key={href}
-                href={href}
-                className="text-sm font-medium text-gray-600 transition hover:text-[#08781F]"
-              >
+              const active =
+                isActiveLink(
+                  href
+                );
 
-                {name}
 
-              </Link>
+              return (
 
-            )
+                <Link
+                  key={href}
+                  href={href}
+                  className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                    active
+                      ? "bg-white text-[#08781F] shadow-sm"
+                      : "text-slate-600 hover:bg-white hover:text-[#08781F]"
+                  }`}
+                >
+
+                  {name}
+
+                </Link>
+
+              );
+
+            }
           )}
 
 
@@ -315,12 +379,14 @@ export default function Navbar() {
 
           {loadingUser ? (
 
-            <div className="h-10 w-28 animate-pulse rounded-lg bg-gray-100" />
+            <div className="h-10 w-28 animate-pulse rounded-xl bg-slate-100" />
 
           ) : user ? (
 
             <div className="relative">
 
+
+              {/* PROFILE BUTTON */}
 
               <button
                 type="button"
@@ -329,7 +395,7 @@ export default function Navbar() {
                     !profileOpen
                   )
                 }
-                className="flex cursor-pointer items-center gap-2 rounded-xl border border-gray-100 bg-white px-3 py-2 transition hover:bg-gray-50"
+                className="flex cursor-pointer items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 transition hover:bg-slate-100"
               >
 
 
@@ -344,7 +410,7 @@ export default function Navbar() {
                 </div>
 
 
-                {/* NAME */}
+                {/* USER INFO */}
 
                 <div className="text-left">
 
@@ -356,7 +422,7 @@ export default function Navbar() {
                   </p>
 
 
-                  <p className="text-[10px] capitalize text-gray-400">
+                  <p className="text-[10px] capitalize text-slate-400">
 
                     {user.role}
 
@@ -366,8 +432,10 @@ export default function Navbar() {
                 </div>
 
 
+                {/* ARROW */}
+
                 <svg
-                  className={`h-4 w-4 text-gray-400 transition ${
+                  className={`h-4 w-4 text-slate-400 transition ${
                     profileOpen
                       ? "rotate-180"
                       : ""
@@ -391,32 +459,55 @@ export default function Navbar() {
 
 
               {/* =========================
-                  DROPDOWN
+                  PROFILE DROPDOWN
               ========================= */}
 
               {profileOpen && (
 
-                <div className="absolute right-0 mt-2 w-64 overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg">
+                <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-2xl bg-white shadow-xl">
 
 
-                  <div className="border-b border-gray-100 p-4">
+                  {/* PROFILE DETAILS */}
+
+                  <div className="bg-slate-50 p-4">
 
 
-                    <p className="font-semibold text-[#002D6D]">
-
-                      {user.name}
-
-                    </p>
+                    <div className="flex items-center gap-3">
 
 
-                    <p className="mt-1 text-sm text-gray-500">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#002D6D] font-bold text-white">
 
-                      {user.mobile}
+                        {getInitial(
+                          user.name
+                        )}
 
-                    </p>
+                      </div>
 
 
-                    <span className="mt-2 inline-block rounded-full bg-green-50 px-2.5 py-1 text-xs font-medium capitalize text-[#08781F]">
+                      <div className="min-w-0">
+
+
+                        <p className="truncate font-semibold text-[#002D6D]">
+
+                          {user.name}
+
+                        </p>
+
+
+                        <p className="mt-1 text-xs text-slate-500">
+
+                          {user.mobile}
+
+                        </p>
+
+
+                      </div>
+
+
+                    </div>
+
+
+                    <span className="mt-3 inline-block rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold capitalize text-[#08781F]">
 
                       {user.role}
 
@@ -426,6 +517,8 @@ export default function Navbar() {
                   </div>
 
 
+                  {/* LOGOUT */}
+
                   <div className="p-2">
 
 
@@ -434,7 +527,7 @@ export default function Navbar() {
                       onClick={
                         handleLogout
                       }
-                      className="w-full cursor-pointer rounded-lg px-3 py-2.5 text-left text-sm font-medium text-red-500 transition hover:bg-red-50"
+                      className="w-full cursor-pointer rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-red-500 transition hover:bg-red-50"
                     >
 
                       Logout
@@ -454,9 +547,13 @@ export default function Navbar() {
 
           ) : (
 
+            /* =========================
+                NOT LOGGED IN
+            ========================= */
+
             <Link
               href="/beACustomer"
-              className="rounded-lg bg-[#002D6D] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#001F4D]"
+              className="rounded-xl bg-[#002D6D] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-900"
             >
 
               Be a Customer
@@ -470,7 +567,7 @@ export default function Navbar() {
 
 
         {/* =========================
-            MOBILE BUTTON
+            MOBILE MENU BUTTON
         ========================= */}
 
         <button
@@ -480,12 +577,14 @@ export default function Navbar() {
               !isOpen
             )
           }
-          className="cursor-pointer rounded-lg p-2 text-[#002D6D] md:hidden"
+          className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl bg-slate-50 text-[#002D6D] transition hover:bg-slate-100 md:hidden"
           aria-label="Toggle menu"
         >
 
 
           {isOpen ? (
+
+            /* CLOSE ICON */
 
             <svg
               className="h-6 w-6"
@@ -504,6 +603,8 @@ export default function Navbar() {
             </svg>
 
           ) : (
+
+            /* MENU ICON */
 
             <svg
               className="h-6 w-6"
@@ -536,22 +637,22 @@ export default function Navbar() {
 
       {isOpen && (
 
-        <div className="border-t border-gray-100 bg-white px-4 pb-5 pt-3 md:hidden">
+        <div className="bg-white px-4 pb-5 pt-2 shadow-sm md:hidden">
 
 
           {/* =========================
-              USER PROFILE
+              MOBILE USER PROFILE
           ========================= */}
 
           {user && (
 
-            <div className="mb-3 rounded-xl bg-slate-50 p-3">
+            <div className="mb-3 rounded-2xl bg-slate-50 p-4">
 
 
               <div className="flex items-center gap-3">
 
 
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#002D6D] font-bold text-white">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#002D6D] font-bold text-white">
 
                   {getInitial(
                     user.name
@@ -560,28 +661,28 @@ export default function Navbar() {
                 </div>
 
 
-                <div>
+                <div className="min-w-0 flex-1">
 
 
-                  <p className="font-semibold text-[#002D6D]">
+                  <p className="truncate font-semibold text-[#002D6D]">
 
                     {user.name}
 
                   </p>
 
 
-                  <p className="text-xs text-gray-500">
+                  <p className="mt-0.5 text-xs text-slate-500">
 
                     {user.mobile}
 
                   </p>
 
 
-                  <p className="mt-0.5 text-[10px] capitalize text-gray-400">
+                  <span className="mt-2 inline-block rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-semibold capitalize text-[#08781F]">
 
                     {user.role}
 
-                  </p>
+                  </span>
 
 
                 </div>
@@ -596,7 +697,7 @@ export default function Navbar() {
 
 
           {/* =========================
-              NAV LINKS
+              MOBILE NAV LINKS
           ========================= */}
 
           <div className="flex flex-col gap-1">
@@ -606,24 +707,38 @@ export default function Navbar() {
               ({
                 name,
                 href,
-              }) => (
+              }) => {
 
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={() =>
-                    setIsOpen(
-                      false
-                    )
-                  }
-                  className="rounded-lg px-4 py-3 text-sm font-medium text-gray-700 transition hover:bg-gray-50 hover:text-[#08781F]"
-                >
+                const active =
+                  isActiveLink(
+                    href
+                  );
 
-                  {name}
 
-                </Link>
+                return (
 
-              )
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() =>
+                      setIsOpen(
+                        false
+                      )
+                    }
+                    className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                      active
+                        ? "bg-emerald-50 text-[#08781F]"
+                        : "text-slate-700 hover:bg-slate-50 hover:text-[#08781F]"
+                    }`}
+                  >
+
+                    {name}
+
+                  </Link>
+
+                );
+
+              }
             )}
 
 
@@ -641,7 +756,7 @@ export default function Navbar() {
                       false
                     )
                   }
-                  className="mt-2 rounded-lg bg-[#002D6D] px-4 py-3 text-center text-sm font-semibold text-white"
+                  className="mt-3 rounded-xl bg-[#002D6D] px-4 py-3 text-center text-sm font-semibold text-white shadow-sm"
                 >
 
                   Be a Customer
@@ -662,7 +777,7 @@ export default function Navbar() {
                 onClick={
                   handleLogout
                 }
-                className="mt-2 cursor-pointer rounded-lg bg-red-50 px-4 py-3 text-left text-sm font-semibold text-red-500"
+                className="mt-3 cursor-pointer rounded-xl bg-red-50 px-4 py-3 text-left text-sm font-semibold text-red-500 transition hover:bg-red-100"
               >
 
                 Logout

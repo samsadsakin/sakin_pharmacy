@@ -15,7 +15,7 @@ import {
 export default function ContactPage() {
 
   const WHATSAPP_NUMBER =
-    "8801540553900";
+    "8801724621816";
 
 
   const [message, setMessage] =
