@@ -371,11 +371,11 @@ const Sidebar = ({ children }) => {
                   "
                 >
 
-                  <span className="flex size-8 items-center justify-center rounded-md bg-white/10 group-hover:bg-emerald-500">
+                  <Link href="/software" className="flex size-8 items-center justify-center rounded-md bg-white/10 group-hover:bg-emerald-500">
 
                     <FaHome />
 
-                  </span>
+                  </Link>
 
 
                   <span className="is-drawer-close:hidden">
