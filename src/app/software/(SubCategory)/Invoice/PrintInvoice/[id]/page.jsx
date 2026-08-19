@@ -511,8 +511,8 @@ export default function PrintInvoicePage() {
             </p>
 
 
-            <p className="mt-1 text-center text-xs">
-              Sakin Pharmacy
+            <p className="mt-1 text-center text-sm">
+              Visit our website: sakinpharmacy.online
             </p>
 
           </div>

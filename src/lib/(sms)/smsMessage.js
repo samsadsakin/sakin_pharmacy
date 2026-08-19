@@ -42,7 +42,7 @@ export function createInvoiceSMS(data) {
       `${medicineText},` +
       `Total:${data.total}Tk,` +
       `${paymentText}` +
-      `~Sakin Pharmacy`
+      `~Web: sakinpharmacy.online`
     );
 
 
@@ -62,7 +62,7 @@ export function createInvoiceSMS(data) {
 
     return (
       `#Inv-${data.invoiceNo}: ` +
-      `আপনি ${data.payableAmount} টাকার ঔষধ ক্রয় করেছেন।~Sakin Pharmacy`
+      `আপনি ${data.payableAmount} টাকার ঔষধ ক্রয় করেছেন।~Web: sakinpharmacy.online`
     );
 
 
@@ -74,7 +74,7 @@ export function createInvoiceSMS(data) {
 
     return (
       `#Inv-${data.invoiceNo}: ` +
-      `ঔষধ ক্রয়। বাকি ${data.payableAmount} টাকা।~Sakin Pharmacy`
+      `ঔষধ ক্রয়। বাকি ${data.payableAmount} টাকা।~Web: sakinpharmacy.online`
     );
 
 
