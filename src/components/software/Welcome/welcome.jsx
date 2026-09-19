@@ -34,7 +34,7 @@ export default function WelcomeCard() {
     },
 
     {
-      name: "Sales Report",
+      name: "Direct Sales Report",
       href: "/software/DirectSale/directSalesReport",
       icon: FaChartLine,
       color: "bg-purple-50 text-purple-700",
@@ -46,7 +46,7 @@ export default function WelcomeCard() {
       color: "bg-blue-50 text-blue-700",
     },
     {
-      name: "Direct Sales Report",
+      name: "Sales Report",
       href: "/software/Invoice/salesReport",
       icon: FaChartLine,
       color: "bg-purple-50 text-purple-700",
