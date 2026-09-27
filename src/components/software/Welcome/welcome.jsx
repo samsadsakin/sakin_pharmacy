@@ -9,7 +9,7 @@ import {
   FaFolderPlus,
   FaCapsules,
   FaUsers,
-  FaTachometerAlt,
+  FaCog,
 } from "react-icons/fa";
 
 
@@ -18,12 +18,6 @@ export default function WelcomeCard() {
 
   const links = [
 
-    {
-      name: "Dashboard",
-      href: "/software/dashboard",
-      icon: FaTachometerAlt,
-      color: "bg-cyan-50 text-cyan-700",
-    },
 
     {
       name: "Create Invoice",
@@ -38,7 +32,6 @@ export default function WelcomeCard() {
       icon: FaFileInvoice,
       color: "bg-green-50 text-green-700",
     },
-
     {
       name: "Sales Report",
       href: "/software/Invoice/salesReport",
@@ -52,7 +45,6 @@ export default function WelcomeCard() {
       icon: FaFolderPlus,
       color: "bg-blue-50 text-blue-700",
     },
-
     {
       name: "Direct Sales Report",
       href: "/software/DirectSale/directSalesReport",
@@ -77,6 +69,7 @@ export default function WelcomeCard() {
   ];
 
 
+
   return (
 
     <div className="mx-auto w-full max-w-5xl">
@@ -86,11 +79,11 @@ export default function WelcomeCard() {
 
       <div
         className="
-          rounded-2xl
-          p-6
-          text-white
-          shadow-lg
-        "
+    rounded-2xl
+    p-6
+    text-white
+    shadow-lg
+  "
         style={{
           background:
             "linear-gradient(90deg, #123B6D 0%, #20A44A 100%)",
@@ -111,6 +104,7 @@ export default function WelcomeCard() {
         <p className="mt-4 text-xs font-medium text-white/70">
           Fast • Simple • Secure Pharmacy Management
         </p>
+
 
       </div>
 
@@ -135,73 +129,86 @@ export default function WelcomeCard() {
           "
         >
 
-          {links.map((item) => {
 
-            const Icon = item.icon;
+          {
+            links.map((item) => {
 
 
-            return (
+              const Icon = item.icon;
 
-              <Link
-                key={item.name}
-                href={item.href}
-                className="
-                  flex
-                  flex-col
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-white
-                  p-4
-                  shadow-sm
-                  transition
-                  hover:-translate-y-1
-                  hover:shadow-md
-                "
-              >
 
-                <div
-                  className={`
+              return (
+
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="
                     flex
-                    h-11
-                    w-11
+                    flex-col
                     items-center
                     justify-center
                     rounded-xl
-                    ${item.color}
-                  `}
-                >
-
-                  <Icon className="text-lg" />
-
-                </div>
-
-
-                <span
-                  className="
-                    mt-3
-                    text-center
-                    text-xs
-                    font-semibold
-                    text-slate-700
+                    bg-white
+                    p-4
+                    shadow-sm
+                    transition
+                    hover:-translate-y-1
+                    hover:shadow-md
                   "
                 >
 
-                  {item.name}
 
-                </span>
+                  <div
+                    className={`
+                      flex
+                      h-11
+                      w-11
+                      items-center
+                      justify-center
+                      rounded-xl
+                      ${item.color}
+                    `}
+                  >
 
-              </Link>
+                    <Icon className="text-lg" />
 
-            );
+                  </div>
 
-          })}
+
+
+                  <span
+                    className="
+                      mt-3
+                      text-center
+                      text-xs
+                      font-semibold
+                      text-slate-700
+                    "
+                  >
+
+                    {item.name}
+
+                  </span>
+
+
+                </Link>
+
+              );
+
+
+            })
+          }
+
 
         </div>
 
+
       </div>
+
+
 
     </div>
 
   );
+
 }
