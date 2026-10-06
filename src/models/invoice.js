@@ -9,6 +9,8 @@ const MedicineSchema = new mongoose.Schema(
 
     medicine: String,
 
+    medicineId: String,
+
     qty: Number,
 
     rate: Number,
@@ -88,22 +90,23 @@ const InvoiceSchema = new mongoose.Schema(
     invoiceNo: String,
 
 
-    date: Date,
+    date: String, // Dynamic String date support
 
 
 
-    // NEW
+    // SELLER
     seller: SellerSchema,
 
 
 
-    // NEW
+    // INVOICE TYPE (UPDATED ENUM)
     invoiceType: {
       type: String,
 
       enum: [
         "regular",
-        "kemo"
+        "kemo",
+        "somajseba" 
       ],
 
       default: "regular",

@@ -1,10 +1,8 @@
-import CreateInvoice from '@/components/software/invoice/CreateInvoice'
-import React from 'react'
+import React from 'react';
+import CreateInvoiceMain from '@/components/software/invoice/(CreateInvoice)/CreateInvoiceMain';
 
-const createInv = () => {
-  return (
-    <CreateInvoice></CreateInvoice>
-  )
-}
+const CreateInvoicePage = () => {
+  return <CreateInvoiceMain />;
+};
 
-export default createInv
+export default CreateInvoicePage;

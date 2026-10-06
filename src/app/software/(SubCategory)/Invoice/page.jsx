@@ -1,10 +1,11 @@
-import CreateInvoice from '@/components/software/invoice/CreateInvoice'
+import CreateInvoiceMain from '@/components/software/invoice/(CreateInvoice)/CreateInvoiceMain';
 import React from 'react'
 
 const createInv = () => {
   return (
-    <CreateInvoice></CreateInvoice>
+    <CreateInvoiceMain />
   )
+  
 }
 
 export default createInv

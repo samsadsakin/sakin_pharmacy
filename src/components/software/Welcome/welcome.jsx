@@ -10,6 +10,7 @@ import {
   FaCapsules,
   FaUsers,
   FaTachometerAlt,
+  FaUserCircle, // User Profile এর জন্য নতুন icon
 } from "react-icons/fa";
 
 export default function WelcomeCard() {
@@ -69,26 +70,29 @@ export default function WelcomeCard() {
       icon: FaUsers,
       color: "bg-pink-50 text-pink-700",
     },
+
+    {
+      name: "User Profile",
+      href: "/software/usersProfile",
+      icon: FaUserCircle,
+      color: "bg-indigo-50 text-indigo-700",
+    },
   ];
 
   return (
     <div className="mx-auto w-full max-w-5xl">
-
       {/* Welcome */}
       <div
         className="rounded-2xl p-6 text-white shadow-lg"
         style={{
-          background:
-            "linear-gradient(90deg, #123B6D 0%, #20A44A 100%)",
+          background: "linear-gradient(90deg, #123B6D 0%, #20A44A 100%)",
         }}
       >
-        <h1 className="text-2xl font-bold">
-          Welcome to Sakin Pharmacy 👋
-        </h1>
+        <h1 className="text-2xl font-bold">Welcome to Sakin Pharmacy 👋</h1>
 
         <p className="mt-2 max-w-xl text-sm text-white/80">
-          Manage your pharmacy easily with smart invoice,
-          medicine management and sales tracking system.
+          Manage your pharmacy easily with smart invoice, medicine management
+          and sales tracking system.
         </p>
 
         <p className="mt-4 text-xs font-medium text-white/70">
@@ -98,10 +102,7 @@ export default function WelcomeCard() {
 
       {/* Quick Access */}
       <div className="mt-6">
-
-        <h2 className="mb-3 text-sm font-bold text-slate-700">
-          Quick Access
-        </h2>
+        <h2 className="mb-3 text-sm font-bold text-slate-700">Quick Access</h2>
 
         <div
           className="
@@ -162,7 +163,6 @@ export default function WelcomeCard() {
             );
           })}
         </div>
-
       </div>
     </div>
   );
